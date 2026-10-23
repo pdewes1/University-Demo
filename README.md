@@ -6,7 +6,7 @@ This project designs and validates two Agentforce agents that give staff one tru
 
 > **Demo scenario.** This is a design and validation exercise. It is not affiliated with or endorsed by the university, and every record in `data/` is synthetic. No real student data is used.
 
-![Architecture overview]<img width="2849" height="1079" alt="High Level Diagram" src="https://github.com/user-attachments/assets/6c8f2c9c-3d76-4862-a9f7-bded0bc1e70a" />
+<img width="2849" height="1079" alt="High Level Diagram" src="https://github.com/user-attachments/assets/6c8f2c9c-3d76-4862-a9f7-bded0bc1e70a" />
 
 
 ## Student Success Agents
@@ -27,7 +27,7 @@ These agents are built with [Agentforce](https://www.salesforce.com/agentforce/)
 
 ### Agent Architecture
 
-![Detailed architecture]<img width="4092" height="2269" alt="Entity Relationship Diagram" src="https://github.com/user-attachments/assets/e3952611-c9cc-4bd1-9224-c74952f3935c" />
+<img width="4092" height="2269" alt="Entity Relationship Diagram" src="https://github.com/user-attachments/assets/e3952611-c9cc-4bd1-9224-c74952f3935c" />
 
 
 ### Component Details
