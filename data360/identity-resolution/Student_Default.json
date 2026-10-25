@@ -1,0 +1,51 @@
+{
+  "_note": "Identity resolution ruleset as configured in the demo org (exported 2026-10-25). Results from the last run: 2,777 source profiles unified into 1,000 profiles (64% consolidation).",
+  "label": "Student Default",
+  "objectApiName": "Individual",
+  "doesRunAutomatically": true,
+  "matchRules": [
+    {
+      "label": "Student ID Match",
+      "criteria": [
+        {
+          "entityName": "ssot__PartyIdentification__dlm",
+          "fieldName": "ssot__IdentificationNumber__c",
+          "matchMethodType": "exact",
+          "partyIdentificationInfo": { "partyName": "Student ID", "partyType": "Person Identifier" }
+        }
+      ]
+    },
+    {
+      "label": "Fuzzy Name and Normalized Email",
+      "criteria": [
+        { "entityName": "ssot__Individual__dlm", "fieldName": "ssot__FirstName__c", "matchMethodType": "fuzzy" },
+        { "entityName": "ssot__Individual__dlm", "fieldName": "ssot__LastName__c", "matchMethodType": "exact" },
+        { "entityName": "ssot__ContactPointEmail__dlm", "fieldName": "ssot__EmailAddress__c", "matchMethodType": "exactnormalized" }
+      ]
+    },
+    {
+      "label": "Fuzzy Name and Normalized Phone",
+      "criteria": [
+        { "entityName": "ssot__Individual__dlm", "fieldName": "ssot__FirstName__c", "matchMethodType": "fuzzy" },
+        { "entityName": "ssot__Individual__dlm", "fieldName": "ssot__LastName__c", "matchMethodType": "exact" },
+        { "entityName": "ssot__ContactPointPhone__dlm", "fieldName": "ssot__FormattedE164PhoneNumber__c", "matchMethodType": "exactnormalized" }
+      ]
+    },
+    {
+      "label": "Fuzzy Name and Normalized Phone and Normalized Email",
+      "criteria": [
+        { "entityName": "ssot__Individual__dlm", "fieldName": "ssot__FirstName__c", "matchMethodType": "fuzzy" },
+        { "entityName": "ssot__Individual__dlm", "fieldName": "ssot__LastName__c", "matchMethodType": "exact" },
+        { "entityName": "ssot__ContactPointPhone__dlm", "fieldName": "ssot__FormattedE164PhoneNumber__c", "matchMethodType": "exactnormalized" },
+        { "entityName": "ssot__ContactPointEmail__dlm", "fieldName": "ssot__EmailAddress__c", "matchMethodType": "exactnormalized" }
+      ]
+    }
+  ],
+  "reconciliationRules": [
+    { "entityName": "ssot__Individual__dlm", "ruleType": "lastupdated" },
+    { "entityName": "ssot__ContactPointEmail__dlm", "ruleType": "lastupdated" },
+    { "entityName": "ssot__ContactPointPhone__dlm", "ruleType": "lastupdated" },
+    { "entityName": "ssot__ContactPointAddress__dlm", "ruleType": "lastupdated" },
+    { "entityName": "ssot__PartyIdentification__dlm", "ruleType": "mostfrequent" }
+  ]
+}

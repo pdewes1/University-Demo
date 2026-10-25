@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Calendly_Event_Type_URI__c</fullName>
+    <description>Calendly API URI of the advisor's advising meeting type, e.g. https://api.calendly.com/event_types/{uuid}. Used to create single-use booking links.</description>
+    <externalId>false</externalId>
+    <label>Calendly Event Type URI</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Url</type>
+</CustomField>
