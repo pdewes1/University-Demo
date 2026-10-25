@@ -31,6 +31,5 @@ I built this with an AI assistant (Claude) working against the org through the S
 
 ## What still needs a human decision
 
-- Whether advisors should see financial aid **amounts** or only status (see `validation/README.md`).
 - Whether Contact owner is the right model for "assigned advisor", versus Education Cloud's advisee or success-team relationships.
 - Production authentication for Calendly (an OAuth service account instead of a personal token).

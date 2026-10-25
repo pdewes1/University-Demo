@@ -20,13 +20,13 @@ public with sharing class Student360DataAction {
         public Boolean success;
         @InvocableVariable(label='Message' description='Status or error message for the advisor.')
         public String message;
-        @InvocableVariable(label='Student Summary' description='Readable summary of attendance, coursework, grades, engagement, discussion activity and financial aid.')
+        @InvocableVariable(label='Student Summary' description='Readable summary of attendance, coursework, grades, engagement, discussion activity and financial aid status.')
         public String studentSummary;
         @InvocableVariable(label='Student 360 JSON' description='Raw data graph JSON for the student, for detailed follow-up questions.')
         public String student360Json;
     }
 
-    @InvocableMethod(label='Get Student 360 Data' description='Retrieves attendance, submissions, enrollment, page views, discussion entries, financial aid and engagement score for a student from the Student 360 data graph.')
+    @InvocableMethod(label='Get Student 360 Data' description='Retrieves attendance, submissions, enrollment, page views, discussion entries, financial aid status and engagement score for a student from the Student 360 data graph.')
     public static List<Response> getStudent360(List<Request> requests) {
         List<Response> results = new List<Response>();
         for (Request req : requests) {
@@ -68,6 +68,7 @@ public with sharing class Student360DataAction {
                 res.message = 'The Student 360 data graph returned no data for ' + student.Name + '. The graph may still be building.';
                 return res;
             }
+            raw = redactFinancialAid(raw);
             res.student360Json = raw.length() > MAX_RAW_CHARS ? raw.substring(0, MAX_RAW_CHARS) : raw;
             res.studentSummary = summarize(student.Name, raw);
             res.success = true;
@@ -163,13 +164,54 @@ public with sharing class Student360DataAction {
 
         Map<String, Object> aid = firstRecord(root, 'Snowflake_Banner_Financial_Aid_Summa__dlm');
         if (aid != null) {
-            lines.add('- Financial aid (aid year ' + str(aid, 'aid_year__c') + '): FAFSA ' + str(aid, 'fafsa_status__c')
+            lines.add('- Financial aid status (aid year ' + str(aid, 'aid_year__c') + '): FAFSA ' + str(aid, 'fafsa_status__c')
                 + ', verification ' + str(aid, 'verification_status__c') + ', satisfactory academic progress '
-                + str(aid, 'satisfactory_academic_progress__c') + ', Pell eligible ' + str(aid, 'pell_eligible__c')
-                + ', offered ' + str(aid, 'total_offered__c') + ', accepted ' + str(aid, 'total_accepted__c')
-                + ', unmet need ' + str(aid, 'unmet_need__c') + '.');
+                + str(aid, 'satisfactory_academic_progress__c')
+                + '. Award amounts and need are not available to advisors; refer the student to the financial aid office.');
         }
         return String.join(lines, '\n');
+    }
+
+    // ---- Financial aid: advisors see status only --------------------------
+
+    // Allow-list: anything not listed (amounts, need, cost of attendance, SAI, Pell, dependency) is removed.
+    @TestVisible
+    private static final Set<String> AID_VISIBLE_FIELDS = new Set<String>{
+        'aid_year__c', 'fafsa_status__c', 'fafsa_received_date__c',
+        'verification_status__c', 'satisfactory_academic_progress__c', 'banner_id__c'
+    };
+
+    @TestVisible
+    private static String redactFinancialAid(String raw) {
+        Object root = JSON.deserializeUntyped(raw);
+        redactNode(root);
+        return JSON.serialize(root);
+    }
+
+    private static void redactNode(Object node) {
+        if (node instanceof Map<String, Object>) {
+            Map<String, Object> m = (Map<String, Object>) node;
+            for (String k : m.keySet()) {
+                Object v = m.get(k);
+                if (k.endsWithIgnoreCase('Snowflake_Banner_Financial_Aid_Summa__dlm')) {
+                    if (v instanceof List<Object>) {
+                        for (Object o : (List<Object>) v) if (o instanceof Map<String, Object>) keepOnly((Map<String, Object>) o);
+                    } else if (v instanceof Map<String, Object>) {
+                        keepOnly((Map<String, Object>) v);
+                    }
+                } else {
+                    redactNode(v);
+                }
+            }
+        } else if (node instanceof List<Object>) {
+            for (Object o : (List<Object>) node) redactNode(o);
+        }
+    }
+
+    private static void keepOnly(Map<String, Object> rec) {
+        for (String k : new List<String>(rec.keySet())) {
+            if (!AID_VISIBLE_FIELDS.contains(k.toLowerCase())) rec.remove(k);
+        }
     }
 
     // Find every list stored under a key ending with the DMO name, anywhere in the tree.

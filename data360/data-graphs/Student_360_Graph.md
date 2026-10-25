@@ -35,3 +35,7 @@ So the agent sees a recent window of activity, not the whole term. `Student360Da
 ## Not zero copy end to end
 
 The Snowflake data streams are Direct Access (federated, zero copy). The data graph, however, materialises its own copy of the joined data inside Data 360 on each refresh. Graph data can therefore be up to a day behind Snowflake, and a copy of the projected fields (including financial aid figures) lives in Data 360.
+
+## Financial aid: status only for advisors
+
+The graph still projects the Banner aid amounts, but `Student360DataAction` removes them before anything reaches the agent. An allow-list keeps only aid year, FAFSA status and received date, verification status, and satisfactory academic progress. Defense in depth for production: also drop the amount fields from the graph projection, so they're never copied into Data 360.

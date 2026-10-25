@@ -35,7 +35,9 @@ Raw outputs: [`results/2026-10-25-action-guardrails.json`](results/2026-10-25-ac
 | Log Student Note | ✅ note logged | ✅ refused | |
 | **Control:** direct Data 360 query | | ⚠️ **returned B's student** | Data 360 doesn't filter on the advising relationship |
 
-**12 of 12 action cases behaved as expected. The control showed the uncertainty was real.**
+| Financial aid status only | ✅ amounts removed | | Allow-list strips amounts, need, cost of attendance, Pell and the aid index from both the summary and the raw JSON (G13) |
+
+**13 of 13 action cases behaved as expected. The control showed the uncertainty was real.**
 
 ## Conclusion
 
@@ -59,4 +61,4 @@ This is the fallback branch of the original plan ("move sensitive objects behind
 
 - **Agent-level prompts, including adversarial ones** (`persona-question-matrix.csv`, rows marked "not yet run"). The checks above test the actions; the planner's behaviour still needs a run in the Agentforce Testing Center.
 - **A second advisor through the agent UI.** The demo org has one Agentforce (Default) license, so Advisor B can't open the agent.
-- **Financial aid detail (A10).** The 360 summary currently includes offered, accepted and unmet-need amounts. That fits "advisor may see aid status", but it is wider than "indicator only". The Registrar and Compliance need to decide before build. The email action already keeps aid amounts out of anything sent to the student.
+- **The agent's reply when asked for aid amounts (A10).** The amounts are already removed from the data (G13), so the agent has nothing to reveal. Its decline-and-refer wording still needs a run at the agent level.

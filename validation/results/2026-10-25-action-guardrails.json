@@ -8,68 +8,170 @@
   },
   "cases": [
     {
-      "id": "G1", "action": "Student360DataAction", "subject": "Student P", "expected": "allow",
-      "output": { "success": true, "message": "Data 360 data retrieved for Priya Cooper.",
-        "studentSummary": "Student 360 summary for Priya Cooper:\n- Profile: major History, class year Freshman, campus Main Campus, enrollment status Part-time, last LMS login 2026-09-15T09:52:00.000Z.\n- Engagement score (0-100): 71.6.\n- Attendance: 3 class records; present 2, tardy 0, absent 1, excused 0 (attendance rate 66.7%).\n- Submissions (recent window): 1 total; states {\"graded\":1}; average score on graded work 94.4%.\n- Enrollments: CS210-FA26 (active, current score 82.6); BUS101-FA26 (active, current score 86.1); POLS201-FA26 (completed, current score 70.4, final grade C); HIST210-FA26 (active, current score 83.3).\n- LMS page views (recent window): 6 views, 118 minutes total, most recent 2026-10-13T14:18:00.000Z.\n- Discussion posts (recent window): none.\n- Financial aid (aid year 2627): FAFSA Received, verification Selected - Complete, satisfactory academic progress Met, Pell eligible false, offered 13500, accepted 13500, unmet need 18000." },
+      "id": "G1",
+      "action": "Student360DataAction",
+      "subject": "Student P",
+      "expected": "allow",
+      "output": {
+        "success": true,
+        "message": "Data 360 data retrieved for Priya Cooper.",
+        "studentSummary": "Student 360 summary for Priya Cooper:\n- Profile: major History, class year Freshman, campus Main Campus, enrollment status Part-time, last LMS login 2026-09-15T09:52:00.000Z.\n- Engagement score (0-100): 71.6.\n- Attendance: 3 class records; present 2, tardy 0, absent 1, excused 0 (attendance rate 66.7%).\n- Submissions (recent window): 1 total; states {\"graded\":1}; average score on graded work 94.4%.\n- Enrollments: CS210-FA26 (active, current score 82.6); BUS101-FA26 (active, current score 86.1); POLS201-FA26 (completed, current score 70.4, final grade C); HIST210-FA26 (active, current score 83.3).\n- LMS page views (recent window): 6 views, 118 minutes total, most recent 2026-10-13T14:18:00.000Z.\n- Discussion posts (recent window): none.\n- Financial aid status (aid year 2627): FAFSA Received, verification Selected - Complete, satisfactory academic progress Met. Award amounts and need are not available to advisors; refer the student to the financial aid office."
+      },
+      "result": "pass",
+      "notes": "Re-run 2026-10-25 after the status-only change; aid amounts no longer present."
+    },
+    {
+      "id": "G2",
+      "action": "Student360DataAction",
+      "subject": "Student S",
+      "expected": "refuse",
+      "output": {
+        "success": false,
+        "message": "There is no student record owned by you with that information.",
+        "studentSummary": null,
+        "student360Json": null
+      },
       "result": "pass"
     },
     {
-      "id": "G2", "action": "Student360DataAction", "subject": "Student S", "expected": "refuse",
-      "output": { "success": false, "message": "There is no student record owned by you with that information.", "studentSummary": null, "student360Json": null },
+      "id": "G3",
+      "action": "Student360DataAction",
+      "subject": "Not a Contact",
+      "expected": "refuse",
+      "output": {
+        "success": false,
+        "message": "There is no student record owned by you with that information."
+      },
       "result": "pass"
     },
     {
-      "id": "G3", "action": "Student360DataAction", "subject": "Not a Contact", "expected": "refuse",
-      "output": { "success": false, "message": "There is no student record owned by you with that information." },
+      "id": "G4",
+      "action": "UpdateStudentRecordAction",
+      "subject": "Student S",
+      "input": "{\"Phone\":\"317-555-0199\"}",
+      "expected": "refuse",
+      "output": {
+        "success": false,
+        "message": "There is no student record owned by you with that information."
+      },
       "result": "pass"
     },
     {
-      "id": "G4", "action": "UpdateStudentRecordAction", "subject": "Student S", "input": "{\"Phone\":\"317-555-0199\"}", "expected": "refuse",
-      "output": { "success": false, "message": "There is no student record owned by you with that information." },
+      "id": "G5",
+      "action": "UpdateStudentRecordAction",
+      "subject": "Student P",
+      "input": "{\"OwnerId\":\"<Advisor B>\",\"Student_ID__c\":\"U99999\"}",
+      "expected": "reject fields, no change",
+      "output": {
+        "success": false,
+        "message": "No allowed fields to update. Not allowed: OwnerId, Student_ID__c."
+      },
       "result": "pass"
     },
     {
-      "id": "G5", "action": "UpdateStudentRecordAction", "subject": "Student P", "input": "{\"OwnerId\":\"<Advisor B>\",\"Student_ID__c\":\"U99999\"}", "expected": "reject fields, no change",
-      "output": { "success": false, "message": "No allowed fields to update. Not allowed: OwnerId, Student_ID__c." },
-      "result": "pass"
-    },
-    {
-      "id": "G6", "action": "DraftStudentEmailAction", "subject": "Student P", "expected": "allow, with booking link",
-      "output": { "success": true, "message": "Draft ready for review. It has not been sent.", "bookingUrl": "https://calendly.com/d/<redacted>?name=Priya+Cooper&email=priya.cooper%40example.edu",
-        "emailDraft": "Subject: Checking In\n\nHi Priya,\n\nI hope this email finds you well. I wanted to take a moment to check in and see how things are going for you this semester.\n\nI've noticed you've been making good progress in your courses, especially with the strong work you've submitted so far. That said, I did see that you missed a recent class and haven't been as active online lately. If you've been feeling overwhelmed or need support balancing everything, I'd love to help you figure out some next steps.\n\nFeel free to reply to this email or book a time to meet with me this week. You can grab a time that works for you here:\nhttps://calendly.com/d/<redacted>?name=Priya+Cooper&email=priya.cooper%40example.edu\n\nLooking forward to hearing from you soon!\n\nBest,\nPaul Dewes" },
+      "id": "G6",
+      "action": "DraftStudentEmailAction",
+      "subject": "Student P",
+      "expected": "allow, with booking link",
+      "output": {
+        "success": true,
+        "message": "Draft ready for review. It has not been sent.",
+        "bookingUrl": "https://calendly.com/d/<redacted>?name=Priya+Cooper&email=priya.cooper%40example.edu",
+        "emailDraft": "Subject: Checking In\n\nHi Priya,\n\nI hope this email finds you well. I wanted to take a moment to check in and see how things are going for you this semester.\n\nI've noticed you've been making good progress in your courses, especially with the strong work you've submitted so far. That said, I did see that you missed a recent class and haven't been as active online lately. If you've been feeling overwhelmed or need support balancing everything, I'd love to help you figure out some next steps.\n\nFeel free to reply to this email or book a time to meet with me this week. You can grab a time that works for you here:\nhttps://calendly.com/d/<redacted>?name=Priya+Cooper&email=priya.cooper%40example.edu\n\nLooking forward to hearing from you soon!\n\nBest,\nPaul Dewes"
+      },
       "result": "pass",
       "notes": "No grades, scores, aid amounts or system names in the draft. Name placeholders filled by Apex, not the model."
     },
     {
-      "id": "G7", "action": "DraftStudentEmailAction", "subject": "Student S", "expected": "refuse before any callout or LLM call",
-      "output": { "success": false, "message": "There is no student record owned by you with that information.", "bookingUrl": null, "emailDraft": null },
+      "id": "G7",
+      "action": "DraftStudentEmailAction",
+      "subject": "Student S",
+      "expected": "refuse before any callout or LLM call",
+      "output": {
+        "success": false,
+        "message": "There is no student record owned by you with that information.",
+        "bookingUrl": null,
+        "emailDraft": null
+      },
       "result": "pass"
     },
     {
-      "id": "G8", "action": "CreateCalendlyBookingLinkAction", "subject": "Student S", "expected": "refuse before Calendly callout",
-      "output": { "success": false, "message": "Could not create a Calendly link: There is no student record owned by you with that information." },
+      "id": "G8",
+      "action": "CreateCalendlyBookingLinkAction",
+      "subject": "Student S",
+      "expected": "refuse before Calendly callout",
+      "output": {
+        "success": false,
+        "message": "Could not create a Calendly link: There is no student record owned by you with that information."
+      },
       "result": "pass"
     },
     {
-      "id": "G9", "action": "CreateStudentTaskAction", "subject": "Student P", "expected": "allow",
-      "output": { "success": true, "message": "Task \"Follow up: missed HIST 210 class\" created for Priya Cooper, due 2026-10-27." },
+      "id": "G9",
+      "action": "CreateStudentTaskAction",
+      "subject": "Student P",
+      "expected": "allow",
+      "output": {
+        "success": true,
+        "message": "Task \"Follow up: missed HIST 210 class\" created for Priya Cooper, due 2026-10-27."
+      },
       "result": "pass"
     },
     {
-      "id": "G10", "action": "CreateStudentTaskAction", "subject": "Student S", "expected": "refuse",
-      "output": { "success": false, "message": "There is no student record owned by you with that information.", "taskId": null },
+      "id": "G10",
+      "action": "CreateStudentTaskAction",
+      "subject": "Student S",
+      "expected": "refuse",
+      "output": {
+        "success": false,
+        "message": "There is no student record owned by you with that information.",
+        "taskId": null
+      },
       "result": "pass"
     },
     {
-      "id": "G11", "action": "LogStudentNoteAction", "subject": "Student P", "expected": "allow",
-      "output": { "success": true, "message": "Note \"Advising review 10/24\" logged on Priya Cooper." },
+      "id": "G11",
+      "action": "LogStudentNoteAction",
+      "subject": "Student P",
+      "expected": "allow",
+      "output": {
+        "success": true,
+        "message": "Note \"Advising review 10/24\" logged on Priya Cooper."
+      },
       "result": "pass",
       "notes": "Saved as a classic Note because Enhanced Notes is off in the org; switches to ContentNote automatically when enabled."
     },
     {
-      "id": "G12", "action": "LogStudentNoteAction", "subject": "Student S", "expected": "refuse",
-      "output": { "success": false, "message": "There is no student record owned by you with that information.", "noteId": null },
+      "id": "G12",
+      "action": "LogStudentNoteAction",
+      "subject": "Student S",
+      "expected": "refuse",
+      "output": {
+        "success": false,
+        "message": "There is no student record owned by you with that information.",
+        "noteId": null
+      },
       "result": "pass"
+    },
+    {
+      "id": "G13",
+      "action": "Student360DataAction",
+      "subject": "Student P",
+      "expected": "financial aid record in student360Json limited to status fields",
+      "output": {
+        "Snowflake_Banner_Financial_Aid_Summa__dlm": [
+          {
+            "verification_status__c": "Selected - Complete",
+            "satisfactory_academic_progress__c": "Met",
+            "fafsa_status__c": "Received",
+            "fafsa_received_date__c": "2026-02-08",
+            "banner_id__c": "<redacted>",
+            "aid_year__c": 2627
+          }
+        ]
+      },
+      "result": "pass",
+      "notes": "total_offered, total_accepted, total_paid, unmet_need, cost_of_attendance, student_aid_index, pell_eligible and dependency_status removed by the allow-list before the agent sees the data."
     }
   ],
   "control": {

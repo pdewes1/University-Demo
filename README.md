@@ -25,7 +25,7 @@ This project designs and validates an **Advisor Agent** in Agentforce. It pulls 
 | Action | What it does | Implementation |
 |---|---|---|
 | Find Students | Searches the advisor's own students | Standard `queryRecords`, filtered to the running user |
-| Get Student 360 Data | Attendance, submissions, enrollments and scores, LMS activity, discussion posts, financial aid status, engagement score | [`Student360DataAction`](force-app/main/default/classes/Student360DataAction.cls) → data graph |
+| Get Student 360 Data | Attendance, submissions, enrollments and scores, LMS activity, discussion posts, financial aid status (no amounts), engagement score | [`Student360DataAction`](force-app/main/default/classes/Student360DataAction.cls) → data graph |
 | Draft Student Outreach Email | A warm, specific check-in email based on the 360 summary, with a single-use Calendly link | [`DraftStudentEmailAction`](force-app/main/default/classes/DraftStudentEmailAction.cls) → Models API + Calendly |
 | Create Calendly Booking Link | Just the link, pre-filled with the student's name and email | [`CreateCalendlyBookingLinkAction`](force-app/main/default/classes/CreateCalendlyBookingLinkAction.cls) |
 | Create Student Task | Follow-up task for the advisor, linked to the student | [`CreateStudentTaskAction`](force-app/main/default/classes/CreateStudentTaskAction.cls) |
@@ -74,7 +74,8 @@ Nothing is written back to Banner, Canvas or Snowflake.
 2. **Einstein Trust Layer.** All model calls go through it. Student names are kept out of the prompt entirely; the model writes `{FIRST_NAME}` and Apex fills it in, because masking was mangling names.
 3. **No unreviewed outreach.** Emails are drafts only. Record updates need the advisor's confirmation and only touch allow-listed fields (owner and student ID can never change).
 4. **No invented links.** The Calendly link is created first and inserted by Apex, so the model never writes a URL. `calendly.com` is the only added Trusted URL.
-5. **Least data in outreach.** The email prompt bars grades, scores, aid amounts and system names, so the student sees patterns, not numbers.
+5. **Financial aid is status only.** Advisors see FAFSA, verification and satisfactory-academic-progress status. Award amounts, need, cost of attendance, Pell and the aid index are stripped in Apex (allow-list) before the agent sees the data. If asked, the agent refers the student to the financial aid office.
+6. **Least data in outreach.** The email prompt bars grades, scores, aid details and system names, so the student sees patterns, not numbers.
 
 ## Data 360
 
@@ -89,11 +90,12 @@ Nothing is written back to Banner, Canvas or Snowflake.
 
 **The uncertainty:** when the agent grounds on Data 360, does it see only that advisor's students, or every student the running user can see?
 
-**What was found:** Data 360 returns any student to a direct query, so the advising relationship has to be enforced in the actions. All 12 action-level cases behaved as expected:
+**What was found:** Data 360 returns any student to a direct query, so the advising relationship has to be enforced in the actions. All 13 action-level cases behaved as expected:
 
 - own student: allowed;
 - another advisor's student: refused before any side effect;
-- protected fields: rejected.
+- protected fields: rejected;
+- financial aid amounts: removed before the agent sees the data.
 
 A control query showed Data 360 alone would have exposed the other advisor's student.
 
@@ -165,7 +167,7 @@ Create the external credential and named credential, then set each advisor's eve
 ├── README.md
 ├── sfdx-project.json
 ├── agent/
-│   └── Academic_Advisor_Student_Success.agent   Agent Script (live version 4)
+│   └── Academic_Advisor_Student_Success.agent   Agent Script (live version 5)
 ├── force-app/main/default/
 │   ├── classes/                                 Apex actions, Calendly client, access check
 │   ├── objects/User/fields/                     Calendly_Event_Type_URI__c
@@ -197,7 +199,6 @@ The build team's one-pager is [docs/execution-handoff.md](docs/execution-handoff
   - Apex tests in CI;
   - an agent test suite with adversarial prompts;
   - a second advisor tested with their own license;
-  - the Registrar's call on financial aid amounts;
   - Calendly moved to OAuth.
 - **Phase 2:** Admissions Agent, Calendly booking write-back, and the student-facing channel (if ever).
 
