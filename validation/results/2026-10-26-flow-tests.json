@@ -1,0 +1,37 @@
+{
+  "run": "2026-10-26, tooling runTestsSynchronous, class AdvisorFlowTests",
+  "testsRun": 8,
+  "failures": 0,
+  "passed": [
+    "accessCheckAllowsOnlyOwnedStudents",
+    "taskFlowCreatesTaskForOwnStudentWithDefaults",
+    "taskFlowNeedsASubjectAndUsesGivenDate",
+    "taskFlowRefusesAnotherAdvisorsStudent",
+    "updateFlowChangesOnlyGivenFields",
+    "updateFlowExplainsWhenNothingToChange",
+    "updateFlowRefusesAnotherAdvisorsStudent",
+    "updateFlowReportsSaveErrors"
+  ],
+  "apexCoverage": {
+    "CheckStudentAccessAction": {
+      "lines": 14,
+      "notCovered": 2
+    },
+    "StudentAccess": {
+      "lines": 6,
+      "notCovered": 0
+    }
+  },
+  "flowCoverage": {
+    "Advisor_Create_Student_Task": {
+      "elements": 8,
+      "notCovered": [
+        "Report_Fault"
+      ]
+    },
+    "Advisor_Update_Student_Record": {
+      "elements": 10,
+      "notCovered": []
+    }
+  }
+}

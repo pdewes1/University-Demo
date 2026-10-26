@@ -68,6 +68,8 @@ The three advising measures move within weeks, so they're what the pilot is judg
 
 The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.agent`](agent/Academic_Advisor_Student_Success.agent).
 
+**A second build, Flow plus Apex.** `Academic_Advisor_Hybrid` is the same agent with the simple record work moved into Flow: [Create Student Task](force-app/main/default/flows/Advisor_Create_Student_Task.flow-meta.xml) and [Update Student Record](force-app/main/default/flows/Advisor_Update_Student_Record.flow-meta.xml). Each flow's first step is the same Apex access check ([`CheckStudentAccessAction`](force-app/main/default/classes/CheckStudentAccessAction.cls)). The search, Data 360, Calendly, email and notes stay in Apex. Both agents are active. [Why each action is where it is](docs/flow-vs-apex.md)
+
 - **On a student record**, it uses that student without asking.
 - **Anywhere else** (Home, another object, Slack), it asks which student you mean or searches for them. It never treats a non-student record Id as a student.
 
@@ -150,6 +152,8 @@ Each fix is in the [validation write-up](validation/README.md), along with the r
 
 **And the code has tests.** [`AdvisorAgentTests`](force-app/main/default/classes/AdvisorAgentTests.cls): 21 Apex tests, all passing, about 86% coverage (494 of 572 lines). They cover the refusal path of every action, the owner-filtered search, the aid allow-list, the advising-activity summary and the Calendly calls (mocked). The Models API call and the live Data 360 read can't run inside Apex tests. [Results](validation/results/2026-10-26-apex-tests.json)
 
+The hybrid agent's flows have their own tests: [`AdvisorFlowTests`](force-app/main/default/classes/AdvisorFlowTests.cls) runs each flow through `Flow.Interview`. 8 tests, all passing; another advisor's student is refused with nothing written. [Results](validation/results/2026-10-26-flow-tests.json)
+
 → [Method, results and raw outputs](validation/README.md)
 
 ## Setup
@@ -203,6 +207,7 @@ Create the external credential and named credential, then set each advisor's eve
 ### 5. Agent
 
 1. Create a new employee agent in Agentforce Builder and replace its script with [`agent/Academic_Advisor_Student_Success.agent`](agent/Academic_Advisor_Student_Success.agent).
+   For the Flow + Apex build, deploy the two flows in `force-app/main/default/flows/` first (they ship as Active), then use [`agent/Academic_Advisor_Hybrid.agent`](agent/Academic_Advisor_Hybrid.agent).
 2. Publish and activate it.
 3. Grant it in **Academic Advisor Agent Access**, then assign each advisor:
    - Academic Advisor Agent Access;
@@ -218,9 +223,11 @@ Create the external credential and named credential, then set each advisor's eve
 ├── README.md
 ├── sfdx-project.json
 ├── agent/
-│   └── Academic_Advisor_Student_Success.agent   Agent Script (live version 8)
+│   ├── Academic_Advisor_Student_Success.agent   Agent Script, all-Apex build (live version 8)
+│   └── Academic_Advisor_Hybrid.agent            Agent Script, Flow + Apex build (live version 1)
 ├── force-app/main/default/
-│   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check, AdvisorAgentTests
+│   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check, tests
+│   ├── flows/                                   Task and record-update flows for the hybrid agent
 │   ├── objects/User/fields/                     Calendly_Event_Type_URI__c
 │   ├── cspTrustedSites/                         Calendly trusted URL
 │   └── permissionsets/                          Agent access, Calendly access
@@ -231,7 +238,7 @@ Create the external credential and named credential, then set each advisor's eve
 │   └── data-graphs/Student_360_Graph.json, .md  Graph definition and notes
 ├── integrations/
 │   └── calendly.md
-├── tools/cost_model.py                          Cost and investment model inputs and calculation
+├── tools/                                       cost_model.py (cost model), build_flows.py (generates the flows)
 ├── tests/                                       Testing Center suites (CSV upload, sf agent test YAML) and their generators
 ├── validation/
 │   ├── README.md                                Uncertainty, method, results for actions and four agent runs
@@ -244,6 +251,7 @@ Create the external credential and named credential, then set each advisor's eve
     ├── operations.md                            Observability, release gates, runbook
     ├── demo-script.md                           Exact demo prompts and backup recording
     ├── panel-prep.md                            Answers if a constraint changes
+    ├── flow-vs-apex.md                          Which actions are Flow, which are Apex, and why
     └── images/
 ```
 

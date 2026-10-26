@@ -130,3 +130,11 @@ Two replies passed but were wrong, and both are fixed in `FindStudentsAction`:
 - **Record updates through the agent.** The update action asks the advisor to confirm, and Testing Center showed the welcome message instead. Check these in the agent panel.
 - **A second advisor through the agent UI.** The demo org has one Agentforce (Default) license, so Advisor B can't open the agent.
 - **Multi-turn cases.** These are in the YAML spec only (`sf agent test`), not in the CSV upload.
+
+## Hybrid agent (Flow + Apex)
+
+`Academic_Advisor_Hybrid` moves task creation and record updates into Flow. Each flow calls the Apex access check first.
+
+- **Flow tests:** `AdvisorFlowTests`, 8 of 8 passing, run through `Flow.Interview`. Both refusal cases confirm nothing was written. [Results](results/2026-10-26-flow-tests.json)
+- **Direct flow calls over REST** are blocked for this integration user, so the flows were checked through Apex tests instead.
+- **Agent-level:** [`tests/Academic_Advisor_Hybrid-run5.csv`](../tests/Academic_Advisor_Hybrid-run5.csv), 14 cases focused on tasks, updates and refusals, plus a few Apex-action retests. Not yet run in Testing Center.
