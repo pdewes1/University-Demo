@@ -4,7 +4,8 @@ The data graph the Advisor Agent reads through `ConnectApi.CdpQuery.getDataGraph
 
 - **Root:** `UnifiedIndividual__dlm`, keyed on `ssot__Id__c`
 - **Refresh:** full refresh daily (incremental refresh off)
-- **Status in the demo org:** ready, version 1
+- **Definition:** [`Student_360_Graph.json`](Student_360_Graph.json) (the create payload; recreate with `d360_data_graph_create`)
+- **Status in the demo org:** recreated 2026-10-25 without the Canvas `advisor` field (see below)
 
 ## Object tree
 
@@ -13,7 +14,7 @@ UnifiedIndividual__dlm                          ssot__Id__c, Student_ID__c, firs
 ├── Student_Engagement_Score__cio               engagement_score__c        (unified_individual_id__c = ssot__Id__c)
 └── IndividualIdentityLink__dlm                 SourceRecordId__c, data source  (UnifiedRecordId__c = ssot__Id__c)
     └── ssot__Individual__dlm                   ssot__Id__c, Student_ID__c       (ssot__Id__c = SourceRecordId__c)
-        ├── Snowflake_Canvas_Users__dlm         major, class year, campus, enrollment status, last login, advisor
+        ├── Snowflake_Canvas_Users__dlm         major, class year, campus, enrollment status, last login
         │   │                                    (user_id__c = Individual.ssot__Id__c)
         │   ├── Snowflake_Canvas_Enrollment__dlm       course, state, current/final score, final grade
         │   ├── Snowflake_Canvas_Attendance__dlm       class date, course, status
@@ -35,6 +36,18 @@ So the agent sees a recent window of activity, not the whole term. `Student360Da
 ## Not zero copy end to end
 
 The Snowflake data streams are Direct Access (federated, zero copy). The data graph, however, materialises its own copy of the joined data inside Data 360 on each refresh. Graph data can therefore be up to a day behind Snowflake, and a copy of the projected fields (including financial aid figures) lives in Data 360.
+
+## Advisor assignment lives in the CRM only
+
+The Canvas users table in Snowflake had an `ADVISOR` column, and it disagreed with the CRM: Priya Cooper's Canvas advisor was "Jennifer Wilson" while her Contact owner is Paul. Two sources for the same fact invites the agent (or a person) to trust the wrong one, so for now **the CRM Contact owner is the only advisor assignment** in the design.
+
+Removed on 2026-10-25, in this order:
+
+1. **Data graph.** Data 360 doesn't allow removing a field from an existing graph (edits can only add fields), so the graph was deleted and recreated under the same name without it. Nothing depended on it.
+2. **DMO field mapping** `advisor__c_fieldmap_advisor__c` on `Snowflake_Canvas_Users__dlm`.
+3. **Data stream field.** `ADVISOR` disabled on the `Snowflake_Canvas_Users` stream, which also removed it from the data lake object and the DMO.
+
+The column still exists in the Snowflake `CANVAS.PUBLIC.USERS` table; Data 360 just no longer reads it. Drop it there too if the source should change.
 
 ## Financial aid: status only for advisors
 

@@ -1,22 +1,55 @@
 # Post University Student Success Agents
 
-Post University wants its advisors to walk into every student conversation already knowing what's going on. Today an advisor opens the CRM for the relationship, Banner for holds, grades and aid, and Canvas for course activity, then pieces it together by hand. That usually happens after a student has already started to slip.
+**Post University wants more of its students to stay enrolled and graduate.** Advisors are the main way the university can step in when a student starts to drift, but they find out late. The early signs are spread across three systems:
 
-This project designs and validates an **Advisor Agent** in Agentforce. It pulls one trusted view of a student from Data 360 (built from Banner, Canvas and the CRM), tells the advisor what needs attention, and turns that into action: an outreach email with a booking link, a follow-up task and a note. It only ever works on the advisor's own students.
+- missed classes, late submissions and a drop in logins, in Canvas;
+- a FAFSA that hasn't been verified, in Banner;
+- no advising contact in weeks, an overdue follow-up, or a change in status such as going on leave, in the CRM.
+
+To see the whole picture, an advisor has to open all three and piece it together by hand, for each student. With a large caseload, that prep work crowds out outreach. By the time an advisor reaches out, the student has often already decided to stop out.
+
+This project designs and validates an **Advisor Agent** in Agentforce. It shortens the time from "a student starts slipping" to "their advisor reaches out with a way to book a meeting," and it removes the prep work that stands in the way. The agent pulls one trusted view of a student from Data 360 (built from Banner, Canvas and the CRM), tells the advisor what needs attention, and turns that into action: an outreach email with a booking link, a follow-up task and a note. It only ever works on the advisor's own students.
 
 > **Demo scenario.** This is a design and validation exercise. It is not affiliated with or endorsed by the university, and all student data is synthetic. No real student data is used.
 
 ![Overview](docs/images/architecture-overview.png)
 
+## Outcomes and how we'll know
+
+| Level | Outcome | Measure | Source |
+|---|---|---|---|
+| **University goal** (lagging, terms to years) | Fewer students leave; more graduate | Term-to-term persistence · attrition rate · graduation rate | Banner, institutional research |
+| **Advising goal** | Advisors spend their time on students, not on gathering data | **Advisor prep time per student** | Time study before the pilot, then agent session timing |
+| | At-risk students hear from their advisor sooner | **Days from an engagement drop to outreach** | The date the Data 360 engagement score falls below threshold, to the date of the outreach task, note or email |
+| | Outreach turns into conversations | **Share of flagged students who book a meeting** | Single-use Calendly links created, matched to bookings |
+| **Guardrail** | Faster isn't careless | Advisor edits per draft · access refusals · zero financial aid amounts exposed | Agent logs, Testing Center suite |
+
+The three advising measures move within weeks, so they're what the pilot is judged on. Persistence and graduation take terms to show up, so they're tracked for the rollout decision, not for the pilot.
+
+### What changes for an advisor
+
+| Today | With the Advisor Agent |
+|---|---|
+| Opens three systems to prepare for one student | Asks "What should I know about this student?" and gets one summary from Data 360 |
+| Notices disengagement when a grade drops or the student goes quiet | Sees attendance, LMS activity, engagement and the last advising contact together, with the two or three things to act on |
+| Writes each check-in email from scratch, then sends a generic booking page | Reviews a specific, supportive draft with a single-use Calendly link for that student |
+| Follow-ups live in memory or a notebook | A follow-up task and a note are logged on the student record in the same conversation |
+
 ## The decision
 
 | | |
 |---|---|
-| **Problem** | Advisors spot disengaged students late, because the signals sit in three systems. |
+| **Problem** | Advisors spot disengaged students late, because the signals sit in three systems. That costs prep time, delays outreach, and loses students who could have been kept. |
 | **Owner** | Provost's office (advising). The VP of Enrollment owns the phase 2 Admissions Agent. |
-| **Recommendation** | Ground an employee agent in a Data 360 data graph over zero-copy Banner and Canvas data. Keep the systems of record where they are, and enforce the advising relationship in the agent's actions. |
-| **Measures** (baselines before build) | Advisor prep time per student · days from an engagement drop to outreach · share of flagged students who book a meeting |
-| **Path to value** | Pilot with one advising team → add the agent test suite and move Calendly to OAuth → roll out to all advisors → phase 2 Admissions Agent |
+| **Recommendation** | Build an Agentforce agent for advisors, grounded in a Data 360 data graph over Banner and Canvas. The Banner and Canvas streams stay in Snowflake (zero copy); the graph keeps a daily copy of only the fields the agent needs. Keep each system of record where it is. Check in the agent's actions that the student belongs to the advisor. |
+| **Success for the pilot** | Compared with baselines taken before launch: lower prep time per student, fewer days from an engagement drop to outreach, and a higher share of flagged students booking a meeting, with no guardrail breaches. |
+| **Path to value** | Take baselines → pilot with one advising team → run the agent test suite and move Calendly to OAuth → roll out to all advisors and track persistence → phase 2 Admissions Agent |
+
+### Assumptions that would change this
+
+- **Outreach timing matters for retention.** If faster outreach doesn't raise bookings, the agent saves advisors time but doesn't move persistence. The pilot tests this directly.
+- **The engagement score flags the right students.** Before rollout, compare who it flags with who actually withdrew last term.
+- **Bookings can be measured.** The demo creates booking links but doesn't record whether a meeting was booked. The pilot needs Calendly's booking events written back to the CRM, which is planned for phase 2.
 
 ## Advisor Agent
 
@@ -24,8 +57,8 @@ This project designs and validates an **Advisor Agent** in Agentforce. It pulls 
 
 | Action | What it does | Implementation |
 |---|---|---|
-| Find Students | Searches the advisor's own students | Standard `queryRecords`, filtered to the running user |
-| Get Student 360 Data | Attendance, submissions, enrollments and scores, LMS activity, discussion posts, financial aid status (no amounts), engagement score | [`Student360DataAction`](force-app/main/default/classes/Student360DataAction.cls) → data graph |
+| Find Students | Searches the advisor's own students by name, Student ID, email or record Id | [`FindStudentsAction`](force-app/main/default/classes/FindStudentsAction.cls): owner filter in the SOQL, so other advisors' students never reach the agent |
+| Get Student 360 Data | Last advising contact and overdue follow-ups (live from the CRM), plus attendance, submissions, enrollments and scores, LMS activity, discussion posts, financial aid status (no amounts) and engagement score | [`Student360DataAction`](force-app/main/default/classes/Student360DataAction.cls) → data graph, with [`StudentAdvisingActivity`](force-app/main/default/classes/StudentAdvisingActivity.cls) for CRM activity |
 | Draft Student Outreach Email | A warm, specific check-in email based on the 360 summary, with a single-use Calendly link | [`DraftStudentEmailAction`](force-app/main/default/classes/DraftStudentEmailAction.cls) → Models API + Calendly |
 | Create Calendly Booking Link | Just the link, pre-filled with the student's name and email | [`CreateCalendlyBookingLinkAction`](force-app/main/default/classes/CreateCalendlyBookingLinkAction.cls) |
 | Create Student Task | Follow-up task for the advisor, linked to the student | [`CreateStudentTaskAction`](force-app/main/default/classes/CreateStudentTaskAction.cls) |
@@ -70,7 +103,7 @@ Nothing is written back to Banner, Canvas or Snowflake.
 
 ### Trust boundaries
 
-1. **Advising relationship.** Every action calls [`StudentAccess.ownedStudent()`](force-app/main/default/classes/StudentAccess.cls) first: a `WITH USER_MODE` query plus a check that the advisor owns the Contact. This runs **before** any Data 360, LLM or Calendly call. It's needed because Data 360 doesn't know who a student's advisor is (see [validation](validation/README.md)).
+1. **Advising relationship.** Every action that takes a student calls [`StudentAccess.ownedStudent()`](force-app/main/default/classes/StudentAccess.cls) first: a `WITH USER_MODE` query plus a check that the advisor owns the Contact. This runs **before** any Data 360, LLM or Calendly call. The search ([`FindStudentsAction`](force-app/main/default/classes/FindStudentsAction.cls)) has the owner filter in its SOQL, so other advisors' students never reach the agent at all. Both are needed because Data 360 doesn't know who a student's advisor is (see [validation](validation/README.md)).
 2. **Einstein Trust Layer.** All model calls go through it. Student names are kept out of the prompt entirely; the model writes `{FIRST_NAME}` and Apex fills it in, because masking was mangling names.
 3. **No unreviewed outreach.** Emails are drafts only. Record updates need the advisor's confirmation and only touch allow-listed fields (owner and student ID can never change).
 4. **No invented links.** The Calendly link is created first and inserted by Apex, so the model never writes a URL. `calendly.com` is the only added Trusted URL.
@@ -98,6 +131,17 @@ Nothing is written back to Banner, Canvas or Snowflake.
 - financial aid amounts: removed before the agent sees the data.
 
 A control query showed Data 360 alone would have exposed the other advisor's student.
+
+**Then the agent itself was tested** in Testing Center, four runs on four agent versions:
+
+| Run | Agent | Cases | Responses passed | What it changed |
+|---|---|---|---|---|
+| 1 | v5 | 75 | 63 | Found that the standard Query Records search returned other advisors' students to the agent. Replaced with an owner-filtered Apex search |
+| 2 | v7 | 80 | 75 | Every other-advisor case passed. Found a GPA estimate and an ignored harsh-email request |
+| 3 | v8 | 20 | 19 | Retests passed. Found the name-plus-Student-ID search bug |
+| 4 | v8 | 20 | 19 | Retests passed. Found extra words breaking the search |
+
+Each fix is in the [validation write-up](validation/README.md), along with the raw exports.
 
 → [Method, results and raw outputs](validation/README.md)
 
@@ -130,7 +174,7 @@ A control query showed Data 360 alone would have exposed the other advisor's stu
 2. Create the streams listed in [data-streams.md](data360/data-streams.md): Direct Access for Snowflake, ingest for the CRM.
 3. Map Individual, Party Identification and Contact Points, then create the [identity ruleset](data360/identity-resolution/Student_Default.json).
 4. Create the [engagement score](data360/calculated-insights/Student_Engagement_Score.sql) insight.
-5. Build `Student_360_Graph` [as documented](data360/data-graphs/Student_360_Graph.md). Set recency on Submissions, Page Views and Discussion Entries in the UI.
+5. Build `Student_360_Graph` from [its definition](data360/data-graphs/Student_360_Graph.json) with the Data 360 `d360_data_graph_create` tool, or in the UI [as documented](data360/data-graphs/Student_360_Graph.md).
 
 ### 3. Salesforce metadata
 
@@ -167,9 +211,9 @@ Create the external credential and named credential, then set each advisor's eve
 ├── README.md
 ├── sfdx-project.json
 ├── agent/
-│   └── Academic_Advisor_Student_Success.agent   Agent Script (live version 5)
+│   └── Academic_Advisor_Student_Success.agent   Agent Script (live version 8)
 ├── force-app/main/default/
-│   ├── classes/                                 Apex actions, Calendly client, access check
+│   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check
 │   ├── objects/User/fields/                     Calendly_Event_Type_URI__c
 │   ├── cspTrustedSites/                         Calendly trusted URL
 │   └── permissionsets/                          Agent access, Calendly access
@@ -177,13 +221,14 @@ Create the external credential and named credential, then set each advisor's eve
 │   ├── data-streams.md
 │   ├── identity-resolution/Student_Default.json
 │   ├── calculated-insights/Student_Engagement_Score.sql
-│   └── data-graphs/Student_360_Graph.md
+│   └── data-graphs/Student_360_Graph.json, .md  Graph definition and notes
 ├── integrations/
 │   └── calendly.md
+├── tests/                                       Testing Center suites (CSV upload, sf agent test YAML) and their generators
 ├── validation/
-│   ├── README.md                                Uncertainty, method, results
+│   ├── README.md                                Uncertainty, method, results for actions and four agent runs
 │   ├── persona-question-matrix.csv
-│   └── results/2026-10-25-action-guardrails.json
+│   └── results/                                 Action guardrail outputs, Testing Center exports (runs 1-4)
 └── docs/
     ├── execution-handoff.md                     One-pager for the build team
     ├── ai-usage.md                              What AI produced and how it was checked
@@ -197,7 +242,7 @@ The build team's one-pager is [docs/execution-handoff.md](docs/execution-handoff
 - **Ready:** the Advisor Agent end to end, the Data 360 model, the Calendly link flow, and action-level access control.
 - **Before build:**
   - Apex tests in CI;
-  - an agent test suite with adversarial prompts;
+  - the Testing Center suite re-run on every agent change;
   - a second advisor tested with their own license;
   - Calendly moved to OAuth.
 - **Phase 2:** Admissions Agent, Calendly booking write-back, and the student-facing channel (if ever).
@@ -206,6 +251,8 @@ The build team's one-pager is [docs/execution-handoff.md](docs/execution-handoff
 
 - The data is synthetic, so the engagement score makes no predictive claims. The caps (20 views, 5 posts) are tuned to the sample and need rescaling for a real term.
 - No Apex test classes yet, so the code can't deploy to production as-is.
-- Agent-level prompts have only been spot-checked by hand. The structured results so far are for the actions.
+- Record updates and multi-turn conversations aren't covered by the Testing Center runs (the update's confirmation step doesn't run there, and the CSV upload is single-turn). Check them in the agent panel.
+- The student search matches name words, not fuzzy spellings, so a misspelled name finds nothing.
+- The data graph still projects financial aid amounts. Apex strips them before the agent sees anything, but the copy exists in Data 360.
 - Contact owner stands in for "assigned advisor".
 - AI was used throughout. See [docs/ai-usage.md](docs/ai-usage.md) for what it got wrong and how each piece was verified.
