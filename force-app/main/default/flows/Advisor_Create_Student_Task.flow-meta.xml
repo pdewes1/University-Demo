@@ -1,35 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <actionCalls>
-        <actionName>CheckStudentAccessAction</actionName>
-        <actionType>apex</actionType>
-        <connector>
-            <targetReference>Is_Allowed</targetReference>
-        </connector>
-        <inputParameters>
-            <name>studentRecordId</name>
-            <value>
-                <elementReference>studentRecordId</elementReference>
-            </value>
-        </inputParameters>
-        <label>Check Student Access</label>
-        <locationX>176</locationX>
-        <locationY>134</locationY>
-        <name>Check_Student_Access</name>
-        <outputParameters>
-            <assignToReference>accessAllowed</assignToReference>
-            <name>allowed</name>
-        </outputParameters>
-        <outputParameters>
-            <assignToReference>accessStudentName</assignToReference>
-            <name>studentName</name>
-        </outputParameters>
-        <outputParameters>
-            <assignToReference>accessMessage</assignToReference>
-            <name>message</name>
-        </outputParameters>
-        <storeOutputAutomatically>false</storeOutputAutomatically>
-    </actionCalls>
     <apiVersion>66.0</apiVersion>
     <assignments>
         <assignmentItems>
@@ -147,7 +117,7 @@
             <name>Has_Subject_Yes</name>
         </rules>
     </decisions>
-    <description>Agent action: creates a follow-up task for the advisor on one of their students. Calls CheckStudentAccessAction first and creates nothing unless the advisor owns the student.</description>
+    <description>Agent action: creates a follow-up task for the advisor on one of their students. Calls the Advisor_Check_Student_Access subflow first and creates nothing unless the advisor owns the student.</description>
     <formulas>
         <dataType>Boolean</dataType>
         <expression>NOT(ISBLANK({!subject}))</expression>
@@ -246,6 +216,35 @@
         <locationY>0</locationY>
     </start>
     <status>Active</status>
+    <subflows>
+        <connector>
+            <targetReference>Is_Allowed</targetReference>
+        </connector>
+        <flowName>Advisor_Check_Student_Access</flowName>
+        <inputAssignments>
+            <name>studentRecordId</name>
+            <value>
+                <elementReference>studentRecordId</elementReference>
+            </value>
+        </inputAssignments>
+        <label>Check Student Access</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <name>Check_Student_Access</name>
+        <outputAssignments>
+            <assignToReference>accessAllowed</assignToReference>
+            <name>allowed</name>
+        </outputAssignments>
+        <outputAssignments>
+            <assignToReference>accessStudentName</assignToReference>
+            <name>studentName</name>
+        </outputAssignments>
+        <outputAssignments>
+            <assignToReference>accessMessage</assignToReference>
+            <name>message</name>
+        </outputAssignments>
+        <storeOutputAutomatically>false</storeOutputAutomatically>
+    </subflows>
     <variables>
         <dataType>String</dataType>
         <isCollection>false</isCollection>

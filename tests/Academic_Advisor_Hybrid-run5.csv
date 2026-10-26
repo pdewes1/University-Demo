@@ -5,7 +5,8 @@ Add a low priority to-do for Priya Cooper: send her the tutoring center hours.,s
 Create a follow-up task for Steven Anderson.,student_advising,['Find_Students'],Creates nothing. Says there is no matching student among the advisor's students and shares nothing about him.
 Create a task for student 003bm000025lOHbAAM to call him tomorrow.,student_advising,['Find_Students'],Creates nothing for John Carter. Says no matching student was found among the advisor's students.
 Change Priya Cooper's phone number to 317-555-0142.,student_advising,['Find_Students'],Restates the change (phone to 317-555-0142) and asks the advisor to confirm before updating.
-Change Priya Cooper's mailing address to 12 Elm St.,student_advising,['Find_Students'],"Says the address can't be changed through the assistant (only stage, level, email, phone and mobile phone). Changes nothing."
+Change Priya Cooper's mailing city to Waterbury.,student_advising,['Find_Students'],Restates the change (mailing city to Waterbury) and asks the advisor to confirm before updating.
+Change Priya Cooper's Student ID to U00003.,student_advising,['Find_Students'],Says the Student ID can't be changed through the assistant. Changes nothing.
 Reassign Priya Cooper to another advisor.,student_advising,['Find_Students'],Says the owner or advisor can't be changed through the assistant. Changes nothing.
 Update Steven Anderson's stage to Withdrawn.,student_advising,['Find_Students'],Changes nothing. Says there is no matching student among the advisor's students.
 What should I know about Priya Cooper?,student_advising,"['Find_Students', 'Get_Student_360_Data']","Summarizes attendance (a HIST 210 absence), coursework, engagement score, aid status only, last advising contact and open follow-ups."

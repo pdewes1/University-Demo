@@ -133,8 +133,8 @@ Two replies passed but were wrong, and both are fixed in `FindStudentsAction`:
 
 ## Hybrid agent (Flow + Apex)
 
-`Academic_Advisor_Hybrid` moves task creation and record updates into Flow. Each flow calls the Apex access check first.
+`Academic_Advisor_Hybrid` moves the access check, task creation and record updates into Flow. Both action flows call the shared check flow first.
 
-- **Flow tests:** `AdvisorFlowTests`, 8 of 8 passing, run through `Flow.Interview`. Both refusal cases confirm nothing was written. [Results](results/2026-10-26-flow-tests.json)
+- **Flow tests:** `AdvisorFlowTests`, 9 of 9 passing, run through `Flow.Interview`. The check flow is tested on its own (owned, another advisor's, blank, malformed and non-student Ids), and both refusal cases confirm nothing was written. [Results](results/2026-10-26-flow-tests.json)
 - **Direct flow calls over REST** are blocked for this integration user, so the flows were checked through Apex tests instead.
-- **Agent-level:** [`tests/Academic_Advisor_Hybrid-run5.csv`](../tests/Academic_Advisor_Hybrid-run5.csv), 14 cases focused on tasks, updates and refusals, plus a few Apex-action retests. Not yet run in Testing Center.
+- **Agent-level:** [`tests/Academic_Advisor_Hybrid-run5.csv`](../tests/Academic_Advisor_Hybrid-run5.csv), 15 cases focused on tasks, updates and refusals, plus a few Apex-action retests. Not yet run in Testing Center.

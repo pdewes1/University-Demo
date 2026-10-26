@@ -4,7 +4,8 @@ python3 tools/build_flows.py <out_dir>
   writes <out_dir>/<Flow>.json   Tooling API payloads ({"FullName", "Metadata"})
   writes force-app/main/default/flows/<Flow>.flow-meta.xml for the repo
 
-Both flows call CheckStudentAccessAction (Apex) first and stop unless the advisor owns the student.
+Advisor_Check_Student_Access is the shared guardrail: a Get Records filtered on the student Id AND
+OwnerId = the running user. The task and update flows call it as a subflow first and stop unless allowed.
 """
 import json, os, sys
 from xml.sax.saxutils import escape
@@ -38,12 +39,53 @@ def is_true(name, label, var_name, yes, no, no_label, x=0, y=0):
 ACCESS_OUTPUTS = [('accessAllowed', 'allowed'), ('accessStudentName', 'studentName'), ('accessMessage', 'message')]
 def access_check(nxt):
     return {'name': 'Check_Student_Access', 'label': 'Check Student Access', 'locationX': 176, 'locationY': 134,
-            'actionName': 'CheckStudentAccessAction', 'actionType': 'apex',
-            'inputParameters': [{'name': 'studentRecordId', 'value': ref('studentRecordId')}],
-            'outputParameters': [{'assignToReference': a, 'name': n} for a, n in ACCESS_OUTPUTS],
+            'flowName': 'Advisor_Check_Student_Access',
+            'inputAssignments': [{'name': 'studentRecordId', 'value': ref('studentRecordId')}],
+            'outputAssignments': [{'assignToReference': a, 'name': n} for a, n in ACCESS_OUTPUTS],
             'storeOutputAutomatically': False, 'connector': goto(nxt)}
 ACCESS_VARS = [var('accessAllowed', 'Boolean', default={'booleanValue': False}),
                var('accessStudentName', 'String'), var('accessMessage', 'String')]
+
+
+def check_flow():
+    """The guardrail in Flow. The owner match is in the query itself, so another advisor's student is
+    never even read into the flow, whatever context the flow runs in."""
+    return {
+        'apiVersion': 66.0, 'label': 'Advisor - Check Student Access', 'processType': 'AutoLaunchedFlow', 'status': 'Active',
+        'interviewLabel': 'Advisor - Check Student Access {!$Flow.CurrentDateTime}',
+        'description': 'Shared guardrail for the advisor agent flows. Returns allowed = true only when the student '
+                       '(Contact) Id belongs to a Contact owned by the running user. Called as a subflow before any '
+                       'student data is read or written.',
+        'start': {'locationX': 50, 'locationY': 0, 'connector': goto('Has_Id')},
+        'decisions': [
+            is_true('Has_Id', 'Student Id given?', 'fHasId', 'Get_Owned_Student', 'Deny', 'No Id', 176, 134),
+            {'name': 'Found', 'label': 'Owned student found?', 'locationX': 176, 'locationY': 350,
+             'defaultConnector': goto('Deny'), 'defaultConnectorLabel': 'Not found',
+             'rules': [{'name': 'Found_Yes', 'label': 'Yes', 'conditionLogic': 'and',
+                        'conditions': [{'leftValueReference': 'student', 'operator': 'IsNull',
+                                        'rightValue': {'booleanValue': False}}],
+                        'connector': goto('Allow')}]},
+        ],
+        'recordLookups': [{
+            'name': 'Get_Owned_Student', 'label': 'Get the student, only if owned by the running user',
+            'locationX': 176, 'locationY': 242, 'object': 'Contact', 'filterLogic': 'and',
+            'filters': [{'field': 'Id', 'operator': 'EqualTo', 'value': ref('studentRecordId')},
+                        {'field': 'OwnerId', 'operator': 'EqualTo', 'value': ref('$User.Id')}],
+            'getFirstRecordOnly': True, 'outputReference': 'student', 'storeOutputAutomatically': False,
+            'queriedFields': ['Id', 'Name'],
+            'connector': goto('Found'), 'faultConnector': goto('Deny')}],
+        'assignments': [
+            assign('Allow', 'Allow', [('allowed', {'booleanValue': True}), ('studentName', ref('student.Name'))], x=176, y=458),
+            assign('Deny', 'Deny', [('allowed', {'booleanValue': False}), ('message', text(REFUSE))], x=440, y=458),
+        ],
+        'formulas': [formula('fHasId', 'Boolean', 'NOT(ISBLANK({!studentRecordId}))')],
+        'variables': [
+            var('studentRecordId', 'String', inp=True),
+            var('student', 'SObject', obj='Contact'),
+            var('allowed', 'Boolean', out=True, default={'booleanValue': False}),
+            var('studentName', 'String', out=True), var('message', 'String', out=True),
+        ],
+    }
 REFUSE_STEP = lambda: assign('Refuse', 'Refuse: not this advisor\'s student',
                              [('message', ref('accessMessage')), ('success', {'booleanValue': False})], x=440, y=350)
 
@@ -53,9 +95,9 @@ def task_flow():
         'apiVersion': 66.0, 'label': 'Advisor - Create Student Task', 'processType': 'AutoLaunchedFlow', 'status': 'Active',
         'interviewLabel': 'Advisor - Create Student Task {!$Flow.CurrentDateTime}',
         'description': 'Agent action: creates a follow-up task for the advisor on one of their students. '
-                       'Calls CheckStudentAccessAction first and creates nothing unless the advisor owns the student.',
+                       'Calls the Advisor_Check_Student_Access subflow first and creates nothing unless the advisor owns the student.',
         'start': {'locationX': 50, 'locationY': 0, 'connector': goto('Check_Student_Access')},
-        'actionCalls': [access_check('Is_Allowed')],
+        'subflows': [access_check('Is_Allowed')],
         'decisions': [
             is_true('Is_Allowed', 'Advisor owns the student?', 'accessAllowed', 'Has_Subject', 'Refuse', 'Not allowed', 176, 242),
             is_true('Has_Subject', 'Subject given?', 'fHasSubject', 'Create_Task', 'Need_Subject', 'No subject', 176, 350),
@@ -91,19 +133,28 @@ def task_flow():
     }
 
 
-# The flow's inputs are the allow-list: only these five fields can change, so there is no JSON to validate.
-UPDATE_FIELDS = [('studentStage', 'Student_Stage__c', 'Student Stage'), ('studentLevel', 'Student_Level__c', 'Student Level'),
-                 ('email', 'Email', 'Email'), ('phone', 'Phone', 'Phone'), ('mobilePhone', 'MobilePhone', 'Mobile Phone')]
+# The flow's inputs are the allow-list: the same 14 fields the Apex action allows, and nothing else.
+# (input name, field, label, is picklist)
+UPDATE_FIELDS = [
+    ('studentStage', 'Student_Stage__c', 'Student Stage', False), ('studentLevel', 'Student_Level__c', 'Student Level', False),
+    ('level', 'Level__c', 'Level', True), ('languages', 'Languages__c', 'Languages', False),
+    ('email', 'Email', 'Email', False), ('phone', 'Phone', 'Phone', False), ('mobilePhone', 'MobilePhone', 'Mobile Phone', False),
+    ('title', 'Title', 'Title', False), ('description', 'Description', 'Description', False),
+    ('mailingStreet', 'MailingStreet', 'Mailing Street', False), ('mailingCity', 'MailingCity', 'Mailing City', False),
+    ('mailingState', 'MailingState', 'Mailing State', False), ('mailingPostalCode', 'MailingPostalCode', 'Mailing Postal Code', False),
+    ('mailingCountry', 'MailingCountry', 'Mailing Country', False),
+]
+FIELD_LABELS = ', '.join(l for _, _, l, _ in UPDATE_FIELDS)
 
 def update_flow():
-    changed = ' & '.join('IF(ISBLANK({!%s}), "", "%s, ")' % (i, label) for i, _, label in UPDATE_FIELDS)
+    changed = ' & '.join('IF(ISBLANK({!%s}), "", "%s, ")' % (i, label) for i, _, label, _ in UPDATE_FIELDS)
     return {
         'apiVersion': 66.0, 'label': 'Advisor - Update Student Record', 'processType': 'AutoLaunchedFlow', 'status': 'Active',
         'interviewLabel': 'Advisor - Update Student Record {!$Flow.CurrentDateTime}',
-        'description': 'Agent action: updates stage, level, email, phone or mobile phone on one of the advisor\'s students. '
-                       'Calls CheckStudentAccessAction first. Fields left blank are not changed; no other field can be.',
+        'description': 'Agent action: updates allow-listed fields on one of the advisor\'s students. Calls the '
+                       'Advisor_Check_Student_Access subflow first. Fields left blank are not changed; no other field can be.',
         'start': {'locationX': 50, 'locationY': 0, 'connector': goto('Check_Student_Access')},
-        'actionCalls': [access_check('Is_Allowed')],
+        'subflows': [access_check('Is_Allowed')],
         'decisions': [
             is_true('Is_Allowed', 'Advisor owns the student?', 'accessAllowed', 'Has_Changes', 'Refuse', 'Not allowed', 176, 242),
             is_true('Has_Changes', 'Any change given?', 'fAnyChange', 'Get_Student', 'No_Changes', 'Nothing to change', 176, 350),
@@ -112,7 +163,7 @@ def update_flow():
             'name': 'Get_Student', 'label': 'Get Student', 'locationX': 176, 'locationY': 458, 'object': 'Contact',
             'filterLogic': 'and', 'filters': [{'field': 'Id', 'operator': 'EqualTo', 'value': ref('studentRecordId')}],
             'getFirstRecordOnly': True, 'outputReference': 'student', 'storeOutputAutomatically': False,
-            'queriedFields': ['Id'] + [f for _, f, _ in UPDATE_FIELDS],
+            'queriedFields': ['Id'] + [f for _, f, _, _ in UPDATE_FIELDS],
             'connector': goto('Apply_Changes'), 'faultConnector': goto('Report_Fault')}],
         'recordUpdates': [{
             'name': 'Update_Student', 'label': 'Update Student', 'locationX': 176, 'locationY': 674,
@@ -120,20 +171,22 @@ def update_flow():
         'assignments': [
             REFUSE_STEP(),
             assign('No_Changes', 'Explain what can change', [('message', text(
-                'No changes were given. Student Stage, Student Level, Email, Phone and Mobile Phone can be updated.'))], x=440, y=458),
+                'No changes were given. These fields can be updated: ' + FIELD_LABELS + '.'))], x=440, y=458),
             assign('Apply_Changes', 'Apply only the given fields',
-                   [('student.' + f, ref('f_' + i)) for i, f, _ in UPDATE_FIELDS], nxt='Update_Student', x=176, y=566),
+                   [('student.' + f, ref('f_' + i)) for i, f, _, _ in UPDATE_FIELDS], nxt='Update_Student', x=176, y=566),
             assign('Report_Updated', 'Report the update', [('success', {'booleanValue': True}), ('updatedFields', ref('fChangedList')),
                                                           ('message', ref('fUpdatedMessage'))], x=176, y=782),
             assign('Report_Fault', 'Report the error', [('message', ref('fFaultMessage'))], x=440, y=782),
         ],
-        'formulas': [formula('f_' + i, 'String', 'IF(ISBLANK({!%s}), {!student.%s}, {!%s})' % (i, f, i)) for i, f, _ in UPDATE_FIELDS] + [
-            formula('fAnyChange', 'Boolean', 'NOT(AND(' + ', '.join('ISBLANK({!%s})' % i for i, _, _ in UPDATE_FIELDS) + '))'),
-            formula('fChangedList', 'String', 'LEFT(' + changed + ', LEN(' + changed + ') - 2)'),
+        'formulas': [formula('f_' + i, 'String', 'IF(ISBLANK({!%s}), %s, {!%s})' % (i, ('TEXT({!student.%s})' if pick else '{!student.%s}') % f, i))
+                     for i, f, _, pick in UPDATE_FIELDS] + [
+            formula('fAnyChange', 'Boolean', 'NOT(AND(' + ', '.join('ISBLANK({!%s})' % i for i, _, _, _ in UPDATE_FIELDS) + '))'),
+            formula('fChangedRaw', 'String', changed),
+            formula('fChangedList', 'String', 'LEFT({!fChangedRaw}, LEN({!fChangedRaw}) - 2)'),
             formula('fUpdatedMessage', 'String', '"Updated " & {!accessStudentName} & ": " & {!fChangedList} & "."'),
             formula('fFaultMessage', 'String', '"Could not update the student record: " & {!$Flow.FaultMessage}'),
         ],
-        'variables': [var('studentRecordId', 'String', inp=True)] + [var(i, 'String', inp=True) for i, _, _ in UPDATE_FIELDS] + [
+        'variables': [var('studentRecordId', 'String', inp=True)] + [var(i, 'String', inp=True) for i, _, _, _ in UPDATE_FIELDS] + [
             var('student', 'SObject', obj='Contact'),
             var('success', 'Boolean', out=True, default={'booleanValue': False}),
             var('updatedFields', 'String', out=True), var('message', 'String', out=True),
@@ -141,7 +194,7 @@ def update_flow():
     }
 
 
-FLOWS = {'Advisor_Create_Student_Task': task_flow, 'Advisor_Update_Student_Record': update_flow}
+FLOWS = {'Advisor_Check_Student_Access': check_flow, 'Advisor_Create_Student_Task': task_flow, 'Advisor_Update_Student_Record': update_flow}
 
 def to_xml(tag, val, ind):
     pad = '    ' * ind

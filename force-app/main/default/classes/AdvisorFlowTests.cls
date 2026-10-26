@@ -1,6 +1,6 @@
 /**
  * Tests for the hybrid agent's Flow actions. Each flow is run the way the agent runs it, through
- * Flow.Interview, so the tests cover the flow logic and the Apex access check it calls first.
+ * Flow.Interview, so the tests cover the flow logic and the Flow access check it calls first.
  */
 @IsTest
 private class AdvisorFlowTests {
@@ -20,7 +20,8 @@ private class AdvisorFlowTests {
     }
 
     private static Contact mine() {
-        return [SELECT Id, Student_Stage__c, Student_Level__c, Email, Phone, MobilePhone FROM Contact WHERE Student_ID__c = 'U99101'];
+        return [SELECT Id, Student_Stage__c, Student_Level__c, Email, Phone, MobilePhone, Title, MailingCity, Description
+                FROM Contact WHERE Student_ID__c = 'U99101'];
     }
     private static Contact theirs() {
         return [SELECT Id, Phone FROM Contact WHERE Student_ID__c = 'U99102'];
@@ -31,25 +32,26 @@ private class AdvisorFlowTests {
         return f;
     }
 
-    // ---- CheckStudentAccessAction (the Apex step every flow calls first) ---
+    // ---- Advisor_Check_Student_Access (the subflow every agent flow calls first) ---
 
     @IsTest
-    static void accessCheckAllowsOnlyOwnedStudents() {
-        CheckStudentAccessAction.Request own = new CheckStudentAccessAction.Request();
-        own.studentRecordId = mine().Id;
-        CheckStudentAccessAction.Request other = new CheckStudentAccessAction.Request();
-        other.studentRecordId = theirs().Id;
-        CheckStudentAccessAction.Request bad = new CheckStudentAccessAction.Request();
-        bad.studentRecordId = 'not-an-id';
+    static void accessFlowAllowsOnlyOwnedStudents() {
+        Flow.Interview own = run('Advisor_Check_Student_Access', new Map<String, Object>{ 'studentRecordId' => mine().Id });
+        System.assertEquals(true, own.getVariableValue('allowed'));
+        System.assertEquals('Flowmine Ownedstudent', own.getVariableValue('studentName'));
 
-        List<CheckStudentAccessAction.Response> r =
-            CheckStudentAccessAction.check(new List<CheckStudentAccessAction.Request>{ own, other, bad });
-        System.assertEquals(true, r[0].allowed);
-        System.assertEquals('Flowmine Ownedstudent', r[0].studentName);
-        System.assertEquals(false, r[1].allowed);
-        System.assertEquals(null, r[1].studentName, 'Nothing about another advisor\'s student is returned');
-        System.assert(r[1].message.contains('no student record owned by you'));
-        System.assertEquals(false, r[2].allowed);
+        Flow.Interview other = run('Advisor_Check_Student_Access', new Map<String, Object>{ 'studentRecordId' => theirs().Id });
+        System.assertEquals(false, other.getVariableValue('allowed'));
+        System.assertEquals(null, other.getVariableValue('studentName'), 'Nothing about another advisor\'s student is returned');
+        System.assert(((String) other.getVariableValue('message')).contains('no student record owned by you'));
+    }
+
+    @IsTest
+    static void accessFlowRefusesBlankAndMalformedIds() {
+        for (String bad : new List<String>{ '', 'not-an-id', '001000000000000AAA' }) {
+            Flow.Interview f = run('Advisor_Check_Student_Access', new Map<String, Object>{ 'studentRecordId' => bad });
+            System.assertEquals(false, f.getVariableValue('allowed'), 'Refused: ' + bad);
+        }
     }
 
     // ---- Advisor_Create_Student_Task ---------------------------------------
@@ -100,13 +102,17 @@ private class AdvisorFlowTests {
     @IsTest
     static void updateFlowChangesOnlyGivenFields() {
         Flow.Interview f = run('Advisor_Update_Student_Record', new Map<String, Object>{
-            'studentRecordId' => mine().Id, 'studentStage' => 'Enrolled', 'mobilePhone' => '317-555-0111' });
+            'studentRecordId' => mine().Id, 'studentStage' => 'Enrolled', 'mobilePhone' => '317-555-0111',
+            'title' => 'Peer Mentor', 'mailingCity' => 'Waterbury', 'description' => 'Prefers email.' });
 
-        System.assertEquals(true, f.getVariableValue('success'));
-        System.assertEquals('Student Stage, Mobile Phone', f.getVariableValue('updatedFields'));
+        System.assertEquals(true, f.getVariableValue('success'), (String) f.getVariableValue('message'));
+        System.assertEquals('Student Stage, Mobile Phone, Title, Description, Mailing City', f.getVariableValue('updatedFields'));
         Contact c = mine();
         System.assertEquals('Enrolled', c.Student_Stage__c);
         System.assertEquals('317-555-0111', c.MobilePhone);
+        System.assertEquals('Peer Mentor', c.Title);
+        System.assertEquals('Waterbury', c.MailingCity);
+        System.assertEquals('Prefers email.', c.Description);
         System.assertEquals('317-555-0100', c.Phone, 'Blank inputs leave fields as they were');
         System.assertEquals('flowmine.owned@example.edu', c.Email);
     }

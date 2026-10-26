@@ -1,35 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <actionCalls>
-        <actionName>CheckStudentAccessAction</actionName>
-        <actionType>apex</actionType>
-        <connector>
-            <targetReference>Is_Allowed</targetReference>
-        </connector>
-        <inputParameters>
-            <name>studentRecordId</name>
-            <value>
-                <elementReference>studentRecordId</elementReference>
-            </value>
-        </inputParameters>
-        <label>Check Student Access</label>
-        <locationX>176</locationX>
-        <locationY>134</locationY>
-        <name>Check_Student_Access</name>
-        <outputParameters>
-            <assignToReference>accessAllowed</assignToReference>
-            <name>allowed</name>
-        </outputParameters>
-        <outputParameters>
-            <assignToReference>accessStudentName</assignToReference>
-            <name>studentName</name>
-        </outputParameters>
-        <outputParameters>
-            <assignToReference>accessMessage</assignToReference>
-            <name>message</name>
-        </outputParameters>
-        <storeOutputAutomatically>false</storeOutputAutomatically>
-    </actionCalls>
     <apiVersion>66.0</apiVersion>
     <assignments>
         <assignmentItems>
@@ -56,7 +26,7 @@
             <assignToReference>message</assignToReference>
             <operator>Assign</operator>
             <value>
-                <stringValue>No changes were given. Student Stage, Student Level, Email, Phone and Mobile Phone can be updated.</stringValue>
+                <stringValue>No changes were given. These fields can be updated: Student Stage, Student Level, Level, Languages, Email, Phone, Mobile Phone, Title, Description, Mailing Street, Mailing City, Mailing State, Mailing Postal Code, Mailing Country.</stringValue>
             </value>
         </assignmentItems>
         <label>Explain what can change</label>
@@ -80,6 +50,20 @@
             </value>
         </assignmentItems>
         <assignmentItems>
+            <assignToReference>student.Level__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_level</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>student.Languages__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_languages</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
             <assignToReference>student.Email</assignToReference>
             <operator>Assign</operator>
             <value>
@@ -98,6 +82,55 @@
             <operator>Assign</operator>
             <value>
                 <elementReference>f_mobilePhone</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>student.Title</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_title</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>student.Description</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_description</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>student.MailingStreet</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_mailingStreet</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>student.MailingCity</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_mailingCity</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>student.MailingState</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_mailingState</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>student.MailingPostalCode</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_mailingPostalCode</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>student.MailingCountry</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>f_mailingCountry</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -198,7 +231,7 @@
             <name>Has_Changes_Yes</name>
         </rules>
     </decisions>
-    <description>Agent action: updates stage, level, email, phone or mobile phone on one of the advisor's students. Calls CheckStudentAccessAction first. Fields left blank are not changed; no other field can be.</description>
+    <description>Agent action: updates allow-listed fields on one of the advisor's students. Calls the Advisor_Check_Student_Access subflow first. Fields left blank are not changed; no other field can be.</description>
     <formulas>
         <dataType>String</dataType>
         <expression>IF(ISBLANK({!studentStage}), {!student.Student_Stage__c}, {!studentStage})</expression>
@@ -208,6 +241,16 @@
         <dataType>String</dataType>
         <expression>IF(ISBLANK({!studentLevel}), {!student.Student_Level__c}, {!studentLevel})</expression>
         <name>f_studentLevel</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!level}), TEXT({!student.Level__c}), {!level})</expression>
+        <name>f_level</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!languages}), {!student.Languages__c}, {!languages})</expression>
+        <name>f_languages</name>
     </formulas>
     <formulas>
         <dataType>String</dataType>
@@ -225,13 +268,53 @@
         <name>f_mobilePhone</name>
     </formulas>
     <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!title}), {!student.Title}, {!title})</expression>
+        <name>f_title</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!description}), {!student.Description}, {!description})</expression>
+        <name>f_description</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!mailingStreet}), {!student.MailingStreet}, {!mailingStreet})</expression>
+        <name>f_mailingStreet</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!mailingCity}), {!student.MailingCity}, {!mailingCity})</expression>
+        <name>f_mailingCity</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!mailingState}), {!student.MailingState}, {!mailingState})</expression>
+        <name>f_mailingState</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!mailingPostalCode}), {!student.MailingPostalCode}, {!mailingPostalCode})</expression>
+        <name>f_mailingPostalCode</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!mailingCountry}), {!student.MailingCountry}, {!mailingCountry})</expression>
+        <name>f_mailingCountry</name>
+    </formulas>
+    <formulas>
         <dataType>Boolean</dataType>
-        <expression>NOT(AND(ISBLANK({!studentStage}), ISBLANK({!studentLevel}), ISBLANK({!email}), ISBLANK({!phone}), ISBLANK({!mobilePhone})))</expression>
+        <expression>NOT(AND(ISBLANK({!studentStage}), ISBLANK({!studentLevel}), ISBLANK({!level}), ISBLANK({!languages}), ISBLANK({!email}), ISBLANK({!phone}), ISBLANK({!mobilePhone}), ISBLANK({!title}), ISBLANK({!description}), ISBLANK({!mailingStreet}), ISBLANK({!mailingCity}), ISBLANK({!mailingState}), ISBLANK({!mailingPostalCode}), ISBLANK({!mailingCountry})))</expression>
         <name>fAnyChange</name>
     </formulas>
     <formulas>
         <dataType>String</dataType>
-        <expression>LEFT(IF(ISBLANK({!studentStage}), "", "Student Stage, ") &amp; IF(ISBLANK({!studentLevel}), "", "Student Level, ") &amp; IF(ISBLANK({!email}), "", "Email, ") &amp; IF(ISBLANK({!phone}), "", "Phone, ") &amp; IF(ISBLANK({!mobilePhone}), "", "Mobile Phone, "), LEN(IF(ISBLANK({!studentStage}), "", "Student Stage, ") &amp; IF(ISBLANK({!studentLevel}), "", "Student Level, ") &amp; IF(ISBLANK({!email}), "", "Email, ") &amp; IF(ISBLANK({!phone}), "", "Phone, ") &amp; IF(ISBLANK({!mobilePhone}), "", "Mobile Phone, ")) - 2)</expression>
+        <expression>IF(ISBLANK({!studentStage}), "", "Student Stage, ") &amp; IF(ISBLANK({!studentLevel}), "", "Student Level, ") &amp; IF(ISBLANK({!level}), "", "Level, ") &amp; IF(ISBLANK({!languages}), "", "Languages, ") &amp; IF(ISBLANK({!email}), "", "Email, ") &amp; IF(ISBLANK({!phone}), "", "Phone, ") &amp; IF(ISBLANK({!mobilePhone}), "", "Mobile Phone, ") &amp; IF(ISBLANK({!title}), "", "Title, ") &amp; IF(ISBLANK({!description}), "", "Description, ") &amp; IF(ISBLANK({!mailingStreet}), "", "Mailing Street, ") &amp; IF(ISBLANK({!mailingCity}), "", "Mailing City, ") &amp; IF(ISBLANK({!mailingState}), "", "Mailing State, ") &amp; IF(ISBLANK({!mailingPostalCode}), "", "Mailing Postal Code, ") &amp; IF(ISBLANK({!mailingCountry}), "", "Mailing Country, ")</expression>
+        <name>fChangedRaw</name>
+    </formulas>
+    <formulas>
+        <dataType>String</dataType>
+        <expression>LEFT({!fChangedRaw}, LEN({!fChangedRaw}) - 2)</expression>
         <name>fChangedList</name>
     </formulas>
     <formulas>
@@ -272,9 +355,18 @@
         <queriedFields>Id</queriedFields>
         <queriedFields>Student_Stage__c</queriedFields>
         <queriedFields>Student_Level__c</queriedFields>
+        <queriedFields>Level__c</queriedFields>
+        <queriedFields>Languages__c</queriedFields>
         <queriedFields>Email</queriedFields>
         <queriedFields>Phone</queriedFields>
         <queriedFields>MobilePhone</queriedFields>
+        <queriedFields>Title</queriedFields>
+        <queriedFields>Description</queriedFields>
+        <queriedFields>MailingStreet</queriedFields>
+        <queriedFields>MailingCity</queriedFields>
+        <queriedFields>MailingState</queriedFields>
+        <queriedFields>MailingPostalCode</queriedFields>
+        <queriedFields>MailingCountry</queriedFields>
         <storeOutputAutomatically>false</storeOutputAutomatically>
     </recordLookups>
     <recordUpdates>
@@ -298,6 +390,35 @@
         <locationY>0</locationY>
     </start>
     <status>Active</status>
+    <subflows>
+        <connector>
+            <targetReference>Is_Allowed</targetReference>
+        </connector>
+        <flowName>Advisor_Check_Student_Access</flowName>
+        <inputAssignments>
+            <name>studentRecordId</name>
+            <value>
+                <elementReference>studentRecordId</elementReference>
+            </value>
+        </inputAssignments>
+        <label>Check Student Access</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <name>Check_Student_Access</name>
+        <outputAssignments>
+            <assignToReference>accessAllowed</assignToReference>
+            <name>allowed</name>
+        </outputAssignments>
+        <outputAssignments>
+            <assignToReference>accessStudentName</assignToReference>
+            <name>studentName</name>
+        </outputAssignments>
+        <outputAssignments>
+            <assignToReference>accessMessage</assignToReference>
+            <name>message</name>
+        </outputAssignments>
+        <storeOutputAutomatically>false</storeOutputAutomatically>
+    </subflows>
     <variables>
         <dataType>String</dataType>
         <isCollection>false</isCollection>
@@ -324,6 +445,20 @@
         <isCollection>false</isCollection>
         <isInput>true</isInput>
         <isOutput>false</isOutput>
+        <name>level</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <name>languages</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
         <name>email</name>
     </variables>
     <variables>
@@ -339,6 +474,55 @@
         <isInput>true</isInput>
         <isOutput>false</isOutput>
         <name>mobilePhone</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <name>title</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <name>description</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <name>mailingStreet</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <name>mailingCity</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <name>mailingState</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <name>mailingPostalCode</name>
+    </variables>
+    <variables>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <name>mailingCountry</name>
     </variables>
     <variables>
         <dataType>SObject</dataType>

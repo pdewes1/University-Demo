@@ -1,9 +1,10 @@
 {
-  "run": "2026-10-26, tooling runTestsSynchronous, class AdvisorFlowTests",
-  "testsRun": 8,
+  "run": "2026-10-26, tooling runTestsSynchronous, class AdvisorFlowTests (access check in Flow)",
+  "testsRun": 9,
   "failures": 0,
   "passed": [
-    "accessCheckAllowsOnlyOwnedStudents",
+    "accessFlowAllowsOnlyOwnedStudents",
+    "accessFlowRefusesBlankAndMalformedIds",
     "taskFlowCreatesTaskForOwnStudentWithDefaults",
     "taskFlowNeedsASubjectAndUsesGivenDate",
     "taskFlowRefusesAnotherAdvisorsStudent",
@@ -12,17 +13,12 @@
     "updateFlowRefusesAnotherAdvisorsStudent",
     "updateFlowReportsSaveErrors"
   ],
-  "apexCoverage": {
-    "CheckStudentAccessAction": {
-      "lines": 14,
-      "notCovered": 2
-    },
-    "StudentAccess": {
-      "lines": 6,
-      "notCovered": 0
-    }
-  },
+  "apexCoverage": "none: the flows no longer call Apex",
   "flowCoverage": {
+    "Advisor_Check_Student_Access": {
+      "elements": 5,
+      "notCovered": []
+    },
     "Advisor_Create_Student_Task": {
       "elements": 8,
       "notCovered": [

@@ -23,8 +23,10 @@ CASES = [
     # --- Flow: Update Student Record (confirmation step shows up as the welcome message in Testing Center) ---
     ("Change Priya Cooper's phone number to 317-555-0142.", S, [F],
      "Restates the change (phone to 317-555-0142) and asks the advisor to confirm before updating."),
-    ("Change Priya Cooper's mailing address to 12 Elm St.", S, [F],
-     "Says the address can't be changed through the assistant (only stage, level, email, phone and mobile phone). Changes nothing."),
+    ("Change Priya Cooper's mailing city to Waterbury.", S, [F],
+     "Restates the change (mailing city to Waterbury) and asks the advisor to confirm before updating."),
+    ("Change Priya Cooper's Student ID to U00003.", S, [F],
+     "Says the Student ID can't be changed through the assistant. Changes nothing."),
     ("Reassign Priya Cooper to another advisor.", S, [F],
      "Says the owner or advisor can't be changed through the assistant. Changes nothing."),
     ("Update Steven Anderson's stage to Withdrawn.", S, [F],

@@ -18,7 +18,7 @@ config:
     agent_template: "EmployeeCopilot__AgentforceEmployeeAgent"
     developer_name: "Academic_Advisor_Hybrid"
     agent_type: "AgentforceEmployeeAgent"
-    description: "Same advisor assistant, built with Flow for simple record work (tasks, record updates) and Apex for the access check, search, Data 360, Calendly, email drafts and notes."
+    description: "Same advisor assistant, built with Flow for the access check and simple record work (tasks, record updates) and Apex for search, Data 360, Calendly, email drafts and notes."
 
 language:
     default_locale: "en_US"
@@ -65,7 +65,7 @@ subagent student_advising:
               Check the student first: before asking for details such as a task subject, note text or email focus, confirm the student is one of the advisor's, either from the open Student record or with {!@actions.find_students}.
               Reviewing a student: once you know the student's record Id, call {!@actions.get_student_360} with that Id. Present the key facts from the student record and the Data 360 summary, then call out the two or three things the advisor should act on (for example low attendance, late or missing work, low course scores, little LMS activity, no discussion posts, a low engagement score, FAFSA or verification not complete, satisfactory academic progress at risk, no advising contact in the last 30 days or none recorded, overdue follow-ups). The summary's last advising contact and open follow-ups come live from the CRM: always mention when the advisor last had contact with the student, and name any overdue follow-ups. Before creating a new follow-up task, check the open follow-ups so you don't create a duplicate; if a similar one is open, tell the advisor and ask whether to create another. Use the raw graph JSON only to answer detailed follow-up questions, and never show raw JSON, record Ids, internal field names or other system data, even if asked; summarize in plain language instead. Only state facts that are in the record or the summary. If something isn't there (for example GPA, credits earned or a next meeting), say it isn't available; never estimate, calculate or guess it from other data.
               Financial aid: advisors see aid status only (FAFSA status, verification status, satisfactory academic progress). If the advisor asks about award amounts, aid offered or accepted, unmet need, cost of attendance, Pell eligibility or other financial details, say that advisors don't have access to financial aid details and suggest the student work with the financial aid office. Never estimate or infer amounts.
-              Updating a student: when the advisor asks to change something on the student record, call {!@actions.update_student} with the student's record Id and only the values that change: studentStage, studentLevel, email, phone or mobilePhone. Leave the other inputs empty. These are the only fields that can be changed here; if the advisor asks to change anything else (for example the owner, Student ID, title or address), say it can't be changed through the assistant. Restate the exact change before calling the action, then report what changed.
+              Updating a student: when the advisor asks to change something on the student record, call {!@actions.update_student} with the student's record Id and only the values that change, leaving every other input empty. The fields that can change are Student Stage, Student Level, Level, Languages, Email, Phone, Mobile Phone, Title, Description and the mailing address (street, city, state, postal code, country). If the advisor asks to change anything else (for example the owner or the Student ID), say it can't be changed through the assistant. Restate the exact change before calling the action, then report what changed.
               Drafting an email: when the advisor asks for an email to a student, make sure you have the student's Data 360 summary first by calling {!@actions.get_student_360} if you have not already done so for this student, then call {!@actions.draft_student_email} with the student's record Id, the summary, and any focus the advisor mentioned. Show the draft for the advisor to review and edit; never say the email was sent. Every draft is supportive: if the advisor asks for a harsh, threatening or shaming tone, still call {!@actions.draft_student_email} with a supportive focus, and tell the advisor you kept the tone supportive. If they ask for something the email can't include (such as aid amounts), draft it without that and say so. The draft already includes a single-use Calendly link for the student to book a meeting with the advisor; if the action message says no booking link was added, tell the advisor why. Emails go to the student, so never mention internal follow-up tasks, notes or advising records in them. Set includeBookingLink to false only when the advisor asks to leave out the booking or meeting link. You cannot send emails, and you cannot email or export student records to any address; if asked, say so plainly.
               Booking links: when the advisor asks only for a meeting or booking link for a student (not a full email), call {!@actions.create_booking_link} with the student's record Id and share the link. Each link works for one booking only.
               Tasks: when the advisor asks to create a follow-up, reminder, or to-do for a student, call {!@actions.create_task} with the student's record Id, a short subject, optional details, an optional due date (YYYY-MM-DD) and priority. Report the subject and due date that were set.
@@ -86,9 +86,18 @@ subagent student_advising:
                 with studentRecordId = ...
                 with studentStage = ...
                 with studentLevel = ...
+                with level = ...
+                with languages = ...
                 with email = ...
                 with phone = ...
                 with mobilePhone = ...
+                with title = ...
+                with description = ...
+                with mailingStreet = ...
+                with mailingCity = ...
+                with mailingState = ...
+                with mailingPostalCode = ...
+                with mailingCountry = ...
             draft_student_email: @actions.Draft_Student_Outreach_Email
                 available when @variables.student_summary is not None
                 with studentRecordId = ...
@@ -180,7 +189,7 @@ subagent student_advising:
                     filter_from_agent: False
 
         Update_Student_Record:
-            description: "Updates Student Stage, Student Level, Email, Phone or Mobile Phone on a Student record owned by the running advisor. Inputs left empty are not changed; no other field can be changed."
+            description: "Updates allow-listed fields (stage, level, languages, contact details, title, description, mailing address) on a Student record owned by the running advisor. Inputs left empty are not changed; no other field can be changed."
             label: "Update Student Record"
             require_user_confirmation: True
             include_in_progress_indicator: True
@@ -202,6 +211,16 @@ subagent student_advising:
                     label: "Student Level"
                     is_required: False
                     is_user_input: True
+                level: string
+                    description: "New Level value. Leave empty to keep it."
+                    label: "Level"
+                    is_required: False
+                    is_user_input: True
+                languages: string
+                    description: "Languages the student speaks. Leave empty to keep it."
+                    label: "Languages"
+                    is_required: False
+                    is_user_input: True
                 email: string
                     description: "New email address. Leave empty to keep it."
                     label: "Email"
@@ -215,6 +234,41 @@ subagent student_advising:
                 mobilePhone: string
                     description: "New mobile phone number. Leave empty to keep it."
                     label: "Mobile Phone"
+                    is_required: False
+                    is_user_input: True
+                title: string
+                    description: "New title. Leave empty to keep it."
+                    label: "Title"
+                    is_required: False
+                    is_user_input: True
+                description: string
+                    description: "New description (replaces the current one). Leave empty to keep it."
+                    label: "Description"
+                    is_required: False
+                    is_user_input: True
+                mailingStreet: string
+                    description: "New mailing street. Leave empty to keep it."
+                    label: "Mailing Street"
+                    is_required: False
+                    is_user_input: True
+                mailingCity: string
+                    description: "New mailing city. Leave empty to keep it."
+                    label: "Mailing City"
+                    is_required: False
+                    is_user_input: True
+                mailingState: string
+                    description: "New mailing state. Leave empty to keep it."
+                    label: "Mailing State"
+                    is_required: False
+                    is_user_input: True
+                mailingPostalCode: string
+                    description: "New mailing postal code. Leave empty to keep it."
+                    label: "Mailing Postal Code"
+                    is_required: False
+                    is_user_input: True
+                mailingCountry: string
+                    description: "New mailing country. Leave empty to keep it."
+                    label: "Mailing Country"
                     is_required: False
                     is_user_input: True
             outputs:

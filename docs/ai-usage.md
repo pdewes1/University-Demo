@@ -4,8 +4,8 @@ I built this with an AI assistant (Claude) working against the org through the S
 
 ## What it produced
 
-- Twelve Apex classes, two flows and two test classes (29 tests): the agent actions, the owner-filtered student search, the CRM advising-activity reader, the Calendly client and the shared access check.
-- The Agent Script for `Academic_Advisor_Student_Success`, through eight published versions, and a second agent, `Academic_Advisor_Hybrid`, with Flow for tasks and record updates.
+- Eleven Apex classes, three flows and two test classes (30 tests): the agent actions, the owner-filtered student search, the CRM advising-activity reader, the Calendly client and the shared access check.
+- The Agent Script for `Academic_Advisor_Student_Success`, through eight published versions, and a second agent, `Academic_Advisor_Hybrid`, with Flow for the access check, tasks and record updates.
 - The `Student_360_Graph` data graph definition, plus the Calendly credential and permission set setup.
 - The validation runs in `validation/`, the Testing Center suites in `tests/`, and this documentation.
 
@@ -27,6 +27,8 @@ I built this with an AI assistant (Claude) working against the org through the S
 | Match a Student ID only when it was the whole search | "Aisha Chen U00974" found nothing (run 3) | Student ID, email or record Id is picked out anywhere in the text |
 | Require every search word to match | "Mark Priya Cooper's follow-up" found nothing (run 4) | Falls back to adjacent word pairs, still inside the owner filter |
 | Remove a field by editing the data graph | Data 360 graphs can only add fields | Graph deleted and recreated without the Canvas advisor field, then again without the aid amounts |
+| Cut the flow update to five fields to keep the inputs short | The hybrid agent could change less than the Apex one, which the user caught | All 14 fields restored as flow inputs |
+| Update a flow by re-creating it under the same name | The Tooling API rejects a duplicate name, and an active version can't be overwritten or deleted while the agent uses it | New versions created as `Name-2`, then the old versions deleted |
 | Smoke-test the new flows over the REST actions API | This integration user isn't allowed to call flows that way | Tested through `Flow.Interview` in Apex tests, the same entry point the agent uses |
 | Pick the test's "other advisor" by standard User fields | This org's Apex wouldn't compile references to `User.Alias` or `User.IsActive` | Tests select another user set up for Calendly, through the custom field |
 

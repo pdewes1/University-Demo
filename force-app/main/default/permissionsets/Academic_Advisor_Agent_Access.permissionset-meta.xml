@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Grants an advisor the Apex actions behind the Advisor Agent.
+  Grants an advisor the Apex actions behind the Advisor Agents. The hybrid agent's flows
+  need no class access: their access check is itself a flow.
   Access to the agents themselves (BotDefinitions Academic_Advisor_Student_Success and
   Academic_Advisor_Hybrid) was granted on this permission set in Setup > Permission Sets >
   Agent Access; add both there after deploy.
@@ -11,10 +12,6 @@
     <hasActivationRequired>false</hasActivationRequired>
     <classAccesses>
         <apexClass>CalendlyService</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>CheckStudentAccessAction</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
