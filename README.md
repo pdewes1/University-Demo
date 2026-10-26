@@ -113,7 +113,7 @@ The three advising measures move within weeks, so they're what the pilot is judg
 
 The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.agent`](agent/Academic_Advisor_Student_Success.agent).
 
-**A second build, Flow plus Apex.** `Academic_Advisor_Hybrid` is the same agent with the access check and simple record work moved into Flow: [Create Student Task](force-app/main/default/flows/Advisor_Create_Student_Task.flow-meta.xml) and [Update Student Record](force-app/main/default/flows/Advisor_Update_Student_Record.flow-meta.xml) (same 14 fields). Both call one shared check flow first, [Check Student Access](force-app/main/default/flows/Advisor_Check_Student_Access.flow-meta.xml), which only reads the student if the running advisor owns them. The search, Data 360, Calendly, email and notes stay in Apex. Both agents are active. [Why each action is where it is](docs/flow-vs-apex.md)
+**A second build, Flow plus Apex.** `Academic_Advisor_Hybrid` is the same agent with the access check and simple record work moved into Flow: [Create Student Task](force-app/main/default/flows/Advisor_Create_Student_Task.flow-meta.xml) and [Update Student Record](force-app/main/default/flows/Advisor_Update_Student_Record.flow-meta.xml) (same 14 fields). Both call one shared check flow first, [Check Student Access](force-app/main/default/flows/Advisor_Check_Student_Access.flow-meta.xml), which only reads the student if the running advisor owns them. The search, Data 360, Calendly, email and notes stay in Apex. Both agents are active. [Why each action is where it is](docs/flow-vs-apex.md) · [How to test it against the original](validation/README.md#running-the-hybrid-suite-and-comparing-it-with-the-original-agent)
 
 - **On a student record**, it uses that student without asking.
 - **Anywhere else** (Home, another object, Slack), it asks which student you mean or searches for them. It never treats a non-student record Id as a student.
@@ -284,7 +284,7 @@ Create the external credential and named credential, then set each advisor's eve
 ├── integrations/
 │   └── calendly.md
 ├── tools/build_flows.py                         Generates the hybrid agent's flows
-├── tests/                                       Testing Center suites (CSV upload, sf agent test YAML) and their generators
+├── tests/                                       Testing Center suites for both agents, their generator, and a run comparison script
 ├── validation/
 │   ├── README.md                                Uncertainty, method, results for actions and four agent runs
 │   ├── persona-question-matrix.csv

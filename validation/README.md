@@ -137,4 +137,21 @@ Two replies passed but were wrong, and both are fixed in `FindStudentsAction`:
 
 - **Flow tests:** `AdvisorFlowTests`, 9 of 9 passing, run through `Flow.Interview`. The check flow is tested on its own (owned, another advisor's, blank, malformed and non-student Ids), and both refusal cases confirm nothing was written. [Results](results/2026-10-26-flow-tests.json)
 - **Direct flow calls over REST** are blocked for this integration user, so the flows were checked through Apex tests instead.
-- **Agent-level:** [`tests/Academic_Advisor_Hybrid-run5.csv`](../tests/Academic_Advisor_Hybrid-run5.csv), 15 cases focused on tasks, updates and refusals, plus a few Apex-action retests. Not yet run in Testing Center.
+- **Agent-level, full suite:** [`tests/Academic_Advisor_Hybrid-testing-center.csv`](../tests/Academic_Advisor_Hybrid-testing-center.csv) (Testing Center upload) and [`.yaml`](../tests/Academic_Advisor_Hybrid-testing-center.yaml) (`sf agent test`, includes multi-turn). It runs every case from the all-Apex suite unchanged (same topic and action names), plus 14 flow-specific cases, `FL01`–`FL14`:
+  - **Task flow:** the default due date and priority when none is given, an explicit date, low and high priority, and two refusals (another advisor's student by record Id, and with his record open, where the flow's own access check is what stops it).
+  - **Update flow:** fields only the flow version handles the same way (mailing address, Student Stage, Student Level plus Languages, Title), "clear her phone number" (a blank input keeps the value, so the agent mustn't claim it cleared it), and a refusal.
+  - **Flow and Apex together:** a task and a note in one request, and a multi-turn confirmation ("Yes, go ahead") that actually runs the update flow.
+  Not yet run.
+- **Agent-level, quick check:** [`tests/Academic_Advisor_Hybrid-run5.csv`](../tests/Academic_Advisor_Hybrid-run5.csv), 15 cases on tasks, updates and refusals. Use it for a fast pass before the full suite.
+
+### Running the hybrid suite and comparing it with the original agent
+
+1. Regenerate if record Ids differ in your org: `python tests/build_suite.py --agent both --ids my-org.json`.
+2. In Testing Center, create a test for **Academic Advisor Hybrid** and upload `tests/Academic_Advisor_Hybrid-testing-center.csv`. Or, with the CLI:
+   `sf agent test create --spec tests/Academic_Advisor_Hybrid-testing-center.yaml --api-name Advisor_Hybrid_Validation -o <org>`, then
+   `sf agent test run --api-name Advisor_Hybrid_Validation --wait 15 --result-format json -o <org>`.
+3. Run the original suite the same day (`Academic_Advisor_Student_Success-testing-center.csv`), so both runs see the same data.
+4. Export both results CSVs and compare them: `python tests/compare_runs.py apex-results.csv hybrid-results.csv`. It prints pass counts for action, topic and outcome, median latency, the flow-only cases, and every case where the two agents disagree with both responses side by side.
+5. Clean up afterwards: the task, note and update cases write to Priya Cooper and Aisha Allen. `FL14` sets Priya's mobile phone to 317-555-0142. Delete test tasks and notes, and put back any changed fields.
+
+**What would make the hybrid the live version:** it matches or beats the original on the shared cases (especially every `access`, `not-my-student` and `security` case), passes `FL05`, `FL06` and `FL12`, and has no meaningful latency difference. If it does, make `Academic_Advisor_Hybrid` the agent advisors use, and keep the all-Apex agent deployed as a fallback.
