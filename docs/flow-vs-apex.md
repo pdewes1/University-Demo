@@ -188,7 +188,7 @@ The Apex version takes a JSON map and checks it against an allow-list. The flow 
 
 Flow coverage: every element of the check and update flows; every element of the task flow except its error branch. The run reports no Apex coverage, which confirms the flows don't call Apex.
 
-## What to say to the panel
+## In short
 
 "Anything an admin should own is Flow, including the access check. It's one shared subflow that filters on the record owner, so another advisor's student is never even read. The integrations stay in Apex because they need callouts, JSON parsing and the model. Both sides check ownership before they touch anything, and both are tested."
 

@@ -27,7 +27,7 @@ I built this with an AI assistant (Claude) working against the org through the S
 | Match a Student ID only when it was the whole search | "Aisha Chen U00974" found nothing (run 3) | Student ID, email or record Id is picked out anywhere in the text |
 | Require every search word to match | "Mark Priya Cooper's follow-up" found nothing (run 4) | Falls back to adjacent word pairs, still inside the owner filter |
 | Remove a field by editing the data graph | Data 360 graphs can only add fields | Graph deleted and recreated without the Canvas advisor field, then again without the aid amounts |
-| Cut the flow update to five fields to keep the inputs short | The hybrid agent could change less than the Apex one, which the user caught | All 14 fields restored as flow inputs |
+| Cut the flow update to five fields to keep the inputs short | The hybrid agent could change less than the Apex one, which was caught in review | All 14 fields restored as flow inputs |
 | Update a flow by re-creating it under the same name | The Tooling API rejects a duplicate name, and an active version can't be overwritten or deleted while the agent uses it | New versions created as `Name-2`, then the old versions deleted |
 | Assume Flow couldn't write Enhanced Notes, without testing it | When tested, Salesforce rejected the flow: "You can't create ContentNote records in a flow" | Notes stay in Apex, now for a verified reason |
 | Smoke-test the new flows over the REST actions API | This integration user isn't allowed to call flows that way | Tested through `Flow.Interview` in Apex tests, the same entry point the agent uses |

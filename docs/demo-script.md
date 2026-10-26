@@ -9,11 +9,11 @@ A 10-minute live demo of the Advisor Agent, with exact prompts. Run it as the ad
 - [ ] Priya Cooper has her one open task ("Follow up: missed HIST 210 class") and no leftover test tasks or notes from rehearsal. Delete any.
 - [ ] Calendly: run one booking link in rehearsal to confirm the token works.
 - [ ] Backup recording is on the laptop and on a USB stick (see the end of this page).
-- [ ] Browser zoom at 125% so the panel can be read on a projector.
+- [ ] Browser zoom at 125% so the screen can be read on a projector.
 
 ## The run
 
-| # | Where | Say or type | What the panel should see |
+| # | Where | Say or type | What the audience should see |
 |---|---|---|---|
 | 1 | Home, Agentforce panel | `Which of my students should I worry about this week?` | The agent explains it can't rank by engagement and asks for a name. Point out that this is honest, not a gap in the demo: search covers the CRM; Data 360 is per student. |
 | 2 | Same | `What should I know about Priya Cooper?` | One summary: attendance (a HIST 210 absence), submissions, LMS activity, engagement score, aid **status** only, last advising contact, and the open follow-up with "none overdue". |
@@ -41,4 +41,4 @@ Record the run the day before, so a network, Calendly or org problem doesn't sin
 4. Blur or crop the Calendly link in step 4 before sharing the file anywhere: it's a live, bookable link.
 5. Save it in two places (laptop desktop and USB stick). Test that it plays offline.
 
-If the live demo fails partway, say what failed and switch to the recording at that step. Don't debug in front of the panel.
+If the live demo fails partway, say what failed and switch to the recording at that step. Don't debug in front of the audience.

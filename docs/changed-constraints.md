@@ -1,4 +1,4 @@
-# Panel prep: if a constraint changes
+# If a constraint changes
 
 Short answers for "what if we changed X?" Each says what changes, what doesn't, and how long it would take. The design point behind all of them: the systems of record stay where they are, and the access check lives in Apex actions, so most changes touch one layer only.
 
