@@ -1,0 +1,33 @@
+{
+  "run": "2026-10-26, tooling runTestsSynchronous, class AdvisorFlowTests (access check in Flow)",
+  "testsRun": 9,
+  "failures": 0,
+  "passed": [
+    "accessFlowAllowsOnlyOwnedStudents",
+    "accessFlowRefusesBlankAndMalformedIds",
+    "taskFlowCreatesTaskForOwnStudentWithDefaults",
+    "taskFlowNeedsASubjectAndUsesGivenDate",
+    "taskFlowRefusesAnotherAdvisorsStudent",
+    "updateFlowChangesOnlyGivenFields",
+    "updateFlowExplainsWhenNothingToChange",
+    "updateFlowRefusesAnotherAdvisorsStudent",
+    "updateFlowReportsSaveErrors"
+  ],
+  "apexCoverage": "none: the flows no longer call Apex",
+  "flowCoverage": {
+    "Advisor_Check_Student_Access": {
+      "elements": 5,
+      "notCovered": []
+    },
+    "Advisor_Create_Student_Task": {
+      "elements": 8,
+      "notCovered": [
+        "Report_Fault"
+      ]
+    },
+    "Advisor_Update_Student_Record": {
+      "elements": 10,
+      "notCovered": []
+    }
+  }
+}

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Grants an advisor the Apex actions behind the Advisor Agent.
-  Access to the agent itself (BotDefinition Academic_Advisor_Student_Success) was granted
-  on this permission set in Setup > Permission Sets > Agent Access; add it there after deploy.
+  Grants an advisor the Apex actions behind the Advisor Agents. The hybrid agent's flows
+  need no class access: their access check is itself a flow.
+  Access to the agents themselves (BotDefinitions Academic_Advisor_Student_Success and
+  Academic_Advisor_Hybrid) was granted on this permission set in Setup > Permission Sets >
+  Agent Access; add both there after deploy.
 -->
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <label>Academic Advisor Agent Access</label>
