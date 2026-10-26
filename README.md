@@ -1,5 +1,7 @@
 # Post University Student Success Agents
 
+[About me](#about-me) · [About Post University](#about-post-university) · [The challenge](#the-challenge) · [The project](#the-project) · [Outcomes](#outcomes-and-how-well-know) · [Architecture](#architecture) · [Setup](#setup)
+
 ## About me
 
 Hi There! My name is Paul Dewes, and I've worked in the Salesforce ecosystem since 2019.
@@ -27,7 +29,19 @@ Hi There! My name is Paul Dewes, and I've worked in the Salesforce ecosystem sin
   </tr>
 </table>
 
+<br>
+
 ---
+
+<br>
+
+## About Post University
+
+Post University has been educating students in Waterbury, Connecticut, since 1890. Today most of its students learn online. Many are working adults, military-affiliated students, career changers and people coming back to finish a degree, fitting school around jobs, families and service. The university's focus is a degree that works with their lives, not against them.
+
+That mix of students is also what makes keeping them enrolled hard. When work, family or service gets busy, school is often the first thing to slip, and a student can drift away quietly without anyone noticing in time. Too many students don't come back for the next term, fewer finish than should, and help tends to arrive after a student has already made up their mind.
+
+## The challenge
 
 **Post University wants more of its students to stay enrolled and graduate.** Advisors are the main way the university can step in when a student starts to drift, but they find out late. The early signs are spread across three systems:
 
@@ -36,6 +50,8 @@ Hi There! My name is Paul Dewes, and I've worked in the Salesforce ecosystem sin
 - no advising contact in weeks, an overdue follow-up, or a change in status such as going on leave, in the CRM.
 
 To see the whole picture, an advisor has to open all three and piece it together by hand, for each student. With a large caseload, that prep work crowds out outreach. By the time an advisor reaches out, the student has often been struggling for quite some time.
+
+## The project
 
 This project designs and validates an **Advisor Agent** in Agentforce. It shortens the time from "a student starts struggling" to "their advisor reaches out with a way to book a meeting to help," and it removes the prep work that stands in the way. The agent pulls one trusted view of a student from Data 360 (built from Banner, Canvas and the CRM), tells the advisor what needs attention, and turns that into action: an outreach email with a booking link, a follow-up task and a note. It only ever works on the advisor's own students.
 
