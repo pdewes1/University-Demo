@@ -29,6 +29,7 @@ I built this with an AI assistant (Claude) working against the org through the S
 | Remove a field by editing the data graph | Data 360 graphs can only add fields | Graph deleted and recreated without the Canvas advisor field, then again without the aid amounts |
 | Cut the flow update to five fields to keep the inputs short | The hybrid agent could change less than the Apex one, which the user caught | All 14 fields restored as flow inputs |
 | Update a flow by re-creating it under the same name | The Tooling API rejects a duplicate name, and an active version can't be overwritten or deleted while the agent uses it | New versions created as `Name-2`, then the old versions deleted |
+| Assume Flow couldn't write Enhanced Notes, without testing it | When tested, Salesforce rejected the flow: "You can't create ContentNote records in a flow" | Notes stay in Apex, now for a verified reason |
 | Smoke-test the new flows over the REST actions API | This integration user isn't allowed to call flows that way | Tested through `Flow.Interview` in Apex tests, the same entry point the agent uses |
 | Pick the test's "other advisor" by standard User fields | This org's Apex wouldn't compile references to `User.Alias` or `User.IsActive` | Tests select another user set up for Calendly, through the custom field |
 

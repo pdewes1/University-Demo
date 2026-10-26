@@ -26,7 +26,7 @@ They have the same instructions, topics and action names, so the same Testing Ce
 | Get Student 360 Data | Apex | Walks nested Data 360 graph JSON, calculates attendance rates and recency windows, and applies the aid allow-list |
 | Draft Outreach Email | Apex | Calls the Models API, then fills in the name and booking link after the model responds, so the model never sees either |
 | Create Calendly Booking Link | Apex | HTTP callout through a Named Credential with a custom `Authorization` header, URL-encoded prefill, and per-status error messages |
-| Log Student Note | Apex | Enhanced Notes store HTML as binary `Content`. Flow can't set binary content |
+| Log Student Note | Apex | Salesforce doesn't allow it: deploying a flow that creates an Enhanced Note fails with "You can't create ContentNote records in a flow" (tested 2026-10-26). Classic Notes would work in Flow, but they show under Notes & Attachments instead of Notes |
 
 The Apex actions keep their own check (`StudentAccess`), so every action in both agents checks ownership before it touches anything.
 
