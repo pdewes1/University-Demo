@@ -268,8 +268,8 @@ Create the external credential and named credential, then set each advisor's eve
 ├── README.md
 ├── sfdx-project.json
 ├── agent/
-│   ├── Academic_Advisor_Student_Success.agent   Agent Script, all-Apex build (live version 8)
-│   └── Academic_Advisor_Hybrid.agent            Agent Script, Flow + Apex build (live version 2)
+│   ├── Academic_Advisor_Student_Success.agent   Agent Script, all-Apex build (live version 9)
+│   └── Academic_Advisor_Hybrid.agent            Agent Script, Flow + Apex build (live version 3)
 ├── force-app/main/default/
 │   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check, tests
 │   ├── flows/                                   Access-check, task and record-update flows for the hybrid agent
