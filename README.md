@@ -22,8 +22,8 @@ Hi There! My name is Paul Dewes, and I've worked in the Salesforce ecosystem sin
     <td width="50%"><img src="docs/images/about/glacier.jpg" alt="Paul and his mom at an overlook in Glacier National Park"></td>
   </tr>
   <tr>
-    <td align="center"><em>On a favorite stretch of road</em></td>
-    <td align="center"><em>Glacier National Park, with my mom</em></td>
+    <td align="center"><em>Riding on the Tail of the Dragon in Tennessee/North Carolina</em></td>
+    <td align="center"><em>Glacier National Park, with my mom (who I learned is afraid of heights on the Going to the Sun Road where this picture is taken)</em></td>
   </tr>
 </table>
 
