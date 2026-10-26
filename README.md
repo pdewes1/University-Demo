@@ -250,7 +250,7 @@ Create the external credential and named credential, then set each advisor's eve
     ├── cost-model.md                            Run cost, build cost, break-even
     ├── operations.md                            Observability, release gates, runbook
     ├── demo-script.md                           Exact demo prompts and backup recording
-    ├── panel-prep.md                            Answers if a constraint changes
+    ├── changed-constraints.md                   What changes if a system or requirement changes
     ├── flow-vs-apex.md                          Which actions are Flow, which are Apex, and why
     └── images/
 ```
