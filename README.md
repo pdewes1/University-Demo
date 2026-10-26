@@ -63,7 +63,7 @@ This project designs and validates an **Advisor Agent** in Agentforce. It shorte
 
 | Level | Outcome | Measure | Source |
 |---|---|---|---|
-| **University goal** (lagging, terms to years) | Fewer students leave; more graduate | Term-to-term persistence · attrition rate · graduation rate | Banner, institutional research |
+| **University goal** | Fewer students leave; more graduate | Term-to-term persistence · attrition rate · graduation rate | Banner, institutional research |
 | **Advising goal** | Advisors spend their time on students, not on gathering data | **Advisor prep time per student** | Time study before the pilot, then agent session timing |
 | | At-risk students hear from their advisor sooner | **Days from an engagement drop to outreach** | The date the Data 360 engagement score falls below threshold, to the date of the outreach task, note or email |
 | | Outreach turns into conversations | **Share of flagged students who book a meeting** | Single-use Calendly links created, matched to bookings |
