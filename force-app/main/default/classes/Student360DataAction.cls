@@ -3,6 +3,8 @@
  * Student_360_Graph data graph so an Academic Advisor can act on it.
  * Resolves Contact.Student_ID__c -> UnifiedIndividual__dlm.ssot__Id__c, reads the
  * graph by that key, and returns a readable summary plus the raw graph JSON.
+ * Also reads advising activity live from the CRM (last advising contact and overdue
+ * follow-ups), since tasks and notes change during the day and the graph refreshes daily.
  * Only students owned by the running user are returned.
  */
 public with sharing class Student360DataAction {
@@ -49,6 +51,8 @@ public with sharing class Student360DataAction {
                 return res;
             }
             Contact student = students[0];
+            String advising = StudentAdvisingActivity.summarize(student.Id);
+            res.studentSummary = advising; // returned even if Data 360 has nothing
             if (String.isBlank(student.Student_ID__c)) {
                 res.message = student.Name + ' has no Student ID, so Data 360 data cannot be matched.';
                 return res;
@@ -70,7 +74,7 @@ public with sharing class Student360DataAction {
             }
             raw = redactFinancialAid(raw);
             res.student360Json = raw.length() > MAX_RAW_CHARS ? raw.substring(0, MAX_RAW_CHARS) : raw;
-            res.studentSummary = summarize(student.Name, raw);
+            res.studentSummary = summarize(student.Name, raw) + '\n' + advising;
             res.success = true;
             res.message = 'Data 360 data retrieved for ' + student.Name + '.';
         } catch (Exception e) {

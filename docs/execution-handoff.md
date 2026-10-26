@@ -4,13 +4,21 @@ A one-page brief for the implementation team taking this from demo org to produc
 
 ## Decision
 
-Build the **Advisor Agent** as an Agentforce employee agent for academic advisors. It is grounded in a Data 360 data graph over Banner and Canvas, which stay in Snowflake with zero copy. It takes action in Salesforce (tasks, notes, record updates) and in Calendly (single-use booking links). The **Admissions Agent** is phase 2.
+Build the **Advisor Agent** as an Agentforce employee agent for academic advisors, to help the university keep more students enrolled through to graduation. Advisors find disengaged students late because the signals sit in Canvas, Banner and the CRM. The agent brings those signals together and shortens the time from an engagement drop to outreach.
 
-**Business owner:** Provost's office (advising). **Measure:**
+It is grounded in a Data 360 data graph over Banner and Canvas, which stay in Snowflake with zero copy. It takes action in Salesforce (tasks, notes, record updates) and in Calendly (single-use booking links). The **Admissions Agent** is phase 2.
+
+**Business owner:** Provost's office (advising).
+
+**University goal (lagging):** term-to-term persistence, attrition rate, graduation rate.
+
+**Pilot measures** (baselines captured before launch):
 
 - advisor prep time per student
 - days from an engagement drop to outreach
 - share of flagged students who book a meeting
+
+**Guardrails:** advisor edits per draft, access refusals, zero financial aid amounts exposed.
 
 ## Scope
 
@@ -30,13 +38,14 @@ Build the **Advisor Agent** as an Agentforce employee agent for academic advisor
 | Snowflake → Data 360 | Direct Access data streams (zero copy), key-pair auth | Data engineering |
 | CRM → Data 360 | Salesforce CRM data stream (ingest) | Salesforce team |
 | Data 360 → agent | Data graph `Student_360_Graph` via `ConnectApi.CdpQuery.getDataGraphData` in Apex | Salesforce team |
+| CRM → agent | Live `WITH USER_MODE` queries on Task, Event and Note for last advising contact and overdue follow-ups (not through the daily graph refresh) | Salesforce team |
 | Agent → LLM | Einstein Models API through the Trust Layer (`sfdc_ai__DefaultGPT4Omni`) | Salesforce team |
 | Agent → Calendly | Named Credential `Calendly` → `POST /scheduling_links` | Salesforce team (Calendly admin owns the token) |
 | Agent → Slack | Agentforce in Slack connection; Slack users mapped to Salesforce users | Slack admin and Salesforce team |
 
 ## Architectural assumptions
 
-1. **Contact owner = assigned advisor.** All access checks use this. Education Cloud advisee or success-team relationships may be the correct production model.
+1. **Contact owner = assigned advisor.** All access checks use this, and it is the only advisor assignment: the Canvas `ADVISOR` column was removed from Data 360 because it disagreed with the CRM. Education Cloud advisee or success-team relationships may be the correct production model.
 2. **The Canvas user ID is the shared student key** across CRM (`Contact.Student_ID__c`), Banner and Canvas.
 3. **Every advisor is a member of one Calendly organization**, so a single org-owner credential can create links on any advisor's meeting type.
 4. **A 30-day window of activity is enough** for advising conversations. The engagement score covers all activity.
@@ -50,23 +59,26 @@ Build the **Advisor Agent** as an Agentforce employee agent for academic advisor
 | Financial aid amounts copied into Data 360 by the graph | Amounts stored outside Banner even though the agent can't see them | **In place:** Apex allow-list, so advisors and the agent get status only. **Needed:** drop amount fields from the graph projection. |
 | Calendly token is over-privileged and person-owned | Leak or a staff change breaks booking | **Needed:** OAuth app on a service account; rotate. |
 | Unused single-use links pile up | Calendly clutter, stray bookable links | **Needed:** create the link at send time, or expire links. |
-| Data graph refreshes daily | Agent can be up to a day behind | Acceptable for advising; enable incremental refresh if needed. |
+| Data graph refreshes daily | Agent can be up to a day behind | Acceptable for advising; enable incremental refresh if needed. CRM activity (tasks, notes) is read live, not from the graph. |
+| Student search is a name-word heuristic | Misspellings find nothing; unusual phrasing could miss a student | Owner filter is enforced regardless. **Needed:** consider SOSL or fuzzy matching, still owner-filtered. |
+| Testing Center results count against data storage | The 5 MB dev org filled after three runs and blocked agent publishing | Delete runs after exporting them. A production org has far more storage. |
 
 ## Unknowns
 
 - Volume and cost at real scale: Data 360 credits for federation and graph refresh, plus Agentforce actions per advisor per day.
-- Agent behaviour under adversarial prompts (Testing Center suite not yet run).
+- Agent behaviour beyond the four Testing Center runs (195 cases, latest 19/20 on v8). Record updates and multi-turn conversations are still untested there. See [validation](../validation/README.md).
 - Slack link rendering and formatting for email drafts.
 
 ## Exit conditions for build
 
 - [ ] Apex tests at 75% or more coverage, including the refusal paths, in CI
-- [ ] Agent test suite (Testing Center) passes the persona matrix, adversarial rows included
+- [ ] Agent test suite (Testing Center) passes the persona matrix, adversarial rows included. Built and run four times (latest 19/20); make it a gate on every agent change
 - [ ] Second advisor tested end to end with their own Agentforce license
 - [x] Financial aid visibility decided: advisors see status only (FAFSA, verification, SAP)
 - [ ] Calendly moved to OAuth on a service account; personal token revoked
 - [ ] Enhanced Notes enabled; notes confirmed as `ContentNote`
-- [ ] Baselines captured for the three outcome measures
+- [ ] Baselines captured for the three pilot measures, plus last term's persistence for the advising team in the pilot
+- [ ] Calendly booking events written back to the CRM, so bookings can be measured
 
 ## Fallbacks
 

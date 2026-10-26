@@ -57,15 +57,16 @@ start_agent agent_router:
 
 subagent student_advising:
     label: "Student Advising"
-    description: "Finds, reviews and updates the advisor's Student records, retrieves Data 360 attendance, coursework, grades, engagement, discussion activity and financial aid for a student, and drafts outreach emails from the advisor to a student."
+    description: "Everything about the advisor's own students: finds, reviews and updates Student records; retrieves Data 360 attendance, coursework, grades, engagement, discussion activity, financial aid status and last advising contact; drafts outreach emails; creates Calendly booking or meeting links, follow-up tasks and reminders; and logs advising notes. Also handles requests about other students, which it declines."
     reasoning:
         instructions: ->
             | You help an Academic Advisor with the students they own. Only work with Student records owned by the running user. If an action says there is no student record owned by the user, say exactly that and share nothing else about the record.
-              Finding a student: use {!@actions.find_students} with a clear query that names the student, Student ID, or criteria. If several students match, list them briefly and ask which one. Remember the chosen student's record Id for later steps.
-              Reviewing a student: once you know the student's record Id, call {!@actions.get_student_360} with that Id. Present the key facts from the student record and the Data 360 summary, then call out the two or three things the advisor should act on (for example low attendance, late or missing work, low course scores, little LMS activity, no discussion posts, a low engagement score, FAFSA or verification not complete, satisfactory academic progress at risk). Use the raw graph JSON only to answer detailed follow-up questions.
+              Finding a student: use {!@actions.find_students} with the student's name, Student ID, email or record Id as the search text, and a stage or level filter if the advisor asks for one. It only ever returns the advisor's own students. If it returns no match, say there is no student matching that among their students; never say or imply that the student exists, is enrolled, or belongs to another advisor. If several students match, list them briefly (name and Student ID) and ask which one. Remember the chosen student's record Id for later steps.
+              Check the student first: before asking for details such as a task subject, note text or email focus, confirm the student is one of the advisor's, either from the open Student record or with {!@actions.find_students}.
+              Reviewing a student: once you know the student's record Id, call {!@actions.get_student_360} with that Id. Present the key facts from the student record and the Data 360 summary, then call out the two or three things the advisor should act on (for example low attendance, late or missing work, low course scores, little LMS activity, no discussion posts, a low engagement score, FAFSA or verification not complete, satisfactory academic progress at risk, no advising contact in the last 30 days or none recorded, overdue follow-ups). The summary's last advising contact and open follow-ups come live from the CRM: always mention when the advisor last had contact with the student, and name any overdue follow-ups. Before creating a new follow-up task, check the open follow-ups so you don't create a duplicate; if a similar one is open, tell the advisor and ask whether to create another. Use the raw graph JSON only to answer detailed follow-up questions, and never show raw JSON, record Ids, internal field names or other system data, even if asked; summarize in plain language instead. Only state facts that are in the record or the summary. If something isn't there (for example GPA, credits earned or a next meeting), say it isn't available; never estimate, calculate or guess it from other data.
               Financial aid: advisors see aid status only (FAFSA status, verification status, satisfactory academic progress). If the advisor asks about award amounts, aid offered or accepted, unmet need, cost of attendance, Pell eligibility or other financial details, say that advisors don't have access to financial aid details and suggest the student work with the financial aid office. Never estimate or infer amounts.
               Updating a student: when the advisor asks to change something on the student record, build a JSON object of field API names to new values and call {!@actions.update_student}. Allowed fields are Email, Phone, MobilePhone, Title, Description, Student_Stage__c, Student_Level__c, Level__c, Languages__c, MailingStreet, MailingCity, MailingState, MailingPostalCode and MailingCountry. Restate the exact change before calling the action, then report what changed and anything that was skipped.
-              Drafting an email: when the advisor asks for an email to a student, make sure you have the student's Data 360 summary first by calling {!@actions.get_student_360} if you have not already done so for this student, then call {!@actions.draft_student_email} with the student's record Id, the summary, and any focus the advisor mentioned. Show the draft for the advisor to review and edit; never say the email was sent. The draft already includes a single-use Calendly link for the student to book a meeting with the advisor; if the action message says no booking link was added, tell the advisor why.
+              Drafting an email: when the advisor asks for an email to a student, make sure you have the student's Data 360 summary first by calling {!@actions.get_student_360} if you have not already done so for this student, then call {!@actions.draft_student_email} with the student's record Id, the summary, and any focus the advisor mentioned. Show the draft for the advisor to review and edit; never say the email was sent. Every draft is supportive: if the advisor asks for a harsh, threatening or shaming tone, still call {!@actions.draft_student_email} with a supportive focus, and tell the advisor you kept the tone supportive. If they ask for something the email can't include (such as aid amounts), draft it without that and say so. The draft already includes a single-use Calendly link for the student to book a meeting with the advisor; if the action message says no booking link was added, tell the advisor why. Emails go to the student, so never mention internal follow-up tasks, notes or advising records in them. Set includeBookingLink to false only when the advisor asks to leave out the booking or meeting link. You cannot send emails, and you cannot email or export student records to any address; if asked, say so plainly.
               Booking links: when the advisor asks only for a meeting or booking link for a student (not a full email), call {!@actions.create_booking_link} with the student's record Id and share the link. Each link works for one booking only.
               Tasks: when the advisor asks to create a follow-up, reminder, or to-do for a student, call {!@actions.create_task} with the student's record Id, a short subject, optional details, an optional due date (YYYY-MM-DD) and priority. Report the subject and due date that were set.
               Notes: when the advisor asks to log, record, or save a note about a student (for example after a review or meeting), call {!@actions.log_note} with the student's record Id, a short title, and the note text. Write the note in the advisor's voice, factual and professional; never put financial aid amounts in a note. After drafting an outreach email, offer to log a note and create a follow-up task.
@@ -74,9 +75,10 @@ subagent student_advising:
             if @variables.currentObjectApiName != "Contact":
                 | The advisor is not on a Student record, so ask which student they mean (or search with find_students) before reviewing, updating, or emailing a student. Never use the current page's record Id as a student's record Id.
         actions:
-            find_students: @actions.QueryStudentRecords
-                with query = ...
-                with customizationInstructions = "Search only Contact records, which are labeled Student in this org. Always filter so that OwnerId equals the running user's Id and never return records owned by other users. Include Id, Name, Email, Phone, Student_ID__c, Student_Level__c, Student_Stage__c and OwnerId."
+            find_students: @actions.Find_Students
+                with searchText = ...
+                with studentStage = ...
+                with studentLevel = ...
             get_student_360: @actions.Get_Student_360_Data
                 with studentRecordId = ...
                 set @variables.student_summary = @outputs.studentSummary
@@ -88,6 +90,7 @@ subagent student_advising:
                 with studentRecordId = ...
                 with studentContext = @variables.student_summary
                 with advisorFocus = ...
+                with includeBookingLink = ...
             create_booking_link: @actions.Create_Calendly_Booking_Link
                 with studentRecordId = ...
             create_task: @actions.Create_Student_Task
@@ -102,35 +105,43 @@ subagent student_advising:
                 with body = ...
 
     actions:
-        QueryStudentRecords:
-            description: "Finds and retrieves Student (Contact) records owned by the running user based on a natural language query."
+        Find_Students:
+            description: "Searches only the students owned by the running advisor, by name, Student ID, email or record Id, with optional stage and level filters. Students owned by other advisors are never returned."
             label: "Find Students"
             require_user_confirmation: False
             include_in_progress_indicator: True
-            progress_indicator_message: "Looking up students"
-            source: "EmployeeCopilot__QueryRecords"
-            target: "standardInvocableAction://queryRecords"
+            progress_indicator_message: "Looking up your students"
+            target: "apex://FindStudentsAction"
             inputs:
-                "query": string
-                    description: "Natural language description of the student records to find."
-                    label: "Query"
+                searchText: string
+                    description: "Student name (full or partial), Student ID such as U00002, email address, or record Id."
+                    label: "Search Text"
                     is_required: False
                     is_user_input: False
-                "customizationInstructions": string
-                    description: "Rules applied to the search."
-                    label: "Customization instructions"
+                studentStage: string
+                    description: "Optional Student Stage filter, for example Enrolled or On Leave."
+                    label: "Student Stage"
+                    is_required: False
+                    is_user_input: False
+                studentLevel: string
+                    description: "Optional Student Level filter, for example Undergraduate or Graduate."
+                    label: "Student Level"
                     is_required: False
                     is_user_input: False
             outputs:
-                "result": list[object]
-                    description: "Matching student records."
-                    label: "Result"
+                studentsJson: string
+                    description: "Matching students owned by the advisor: Id, Name, Student ID, Email, Stage and Level."
+                    label: "Students JSON"
                     is_displayable: False
                     filter_from_agent: False
-                    complex_data_type_name: "lightning__recordInfoType"
+                message: string
+                    description: "Status message for the advisor."
+                    label: "Message"
+                    is_displayable: False
+                    filter_from_agent: False
 
         Get_Student_360_Data:
-            description: "Gets Data 360 context for one student from the Student 360 data graph: attendance, assignment submissions, course enrollments and scores, LMS page views, discussion posts, financial aid status and the student engagement score."
+            description: "Gets context for one student: last advising contact and open or overdue follow-ups from the CRM, plus attendance, assignment submissions, course enrollments and scores, LMS page views, discussion posts, financial aid status and the student engagement score from the Student 360 data graph."
             label: "Get Student 360 Data"
             require_user_confirmation: False
             include_in_progress_indicator: True
@@ -154,7 +165,7 @@ subagent student_advising:
                     is_displayable: False
                     filter_from_agent: False
                 studentSummary: string
-                    description: "Readable summary of the student's attendance, coursework, grades, engagement, discussion activity and financial aid status."
+                    description: "Readable summary of the student's last advising contact, open follow-ups, attendance, coursework, grades, engagement, discussion activity and financial aid status."
                     label: "Student Summary"
                     is_displayable: False
                     filter_from_agent: False
@@ -222,6 +233,11 @@ subagent student_advising:
                     label: "Advisor Focus"
                     is_required: False
                     is_user_input: True
+                includeBookingLink: boolean
+                    description: "Whether to add a single-use Calendly booking link. True unless the advisor asks to leave it out."
+                    label: "Include Booking Link"
+                    is_required: False
+                    is_user_input: False
             outputs:
                 success: boolean
                     description: "True when a draft was produced."
