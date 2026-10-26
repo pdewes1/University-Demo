@@ -4,9 +4,15 @@ Builds the Advisor Agent test suite in two formats from one case list:
   Academic_Advisor_Student_Success-testing-center.csv   Testing Center upload (single-turn cases)
   Academic_Advisor_Student_Success-testing-center.yaml  `sf agent test create --spec` (all cases)
 
+It also builds the same suite for the hybrid agent (tasks, record updates and the access check in Flow):
+
+  Academic_Advisor_Hybrid-testing-center.csv / .yaml   every case above, plus flow-specific cases (FL01-FL14)
+
 Usage:
   python tests/build_suite.py                      # record Ids from tests/demo-org-ids.json
   python tests/build_suite.py --ids my-org.json    # another org: same keys (PRIYA, STEVEN, JOHN, TASK)
+  python tests/build_suite.py --agent hybrid       # the Academic_Advisor_Hybrid suite
+  python tests/build_suite.py --agent both         # both suites
 
 Run the suite as an advisor who owns Priya Cooper and Aisha Allen but NOT Steven Anderson or
 John Carter. Actions run live: email, booking-link, task, note and update cases write to the org.
@@ -276,6 +282,13 @@ None, STUDENT, [],
 
 # Testing Center CSV has no context-variable columns, so record-context cases get a named version.
 CSV_UTTERANCE = {
+    "FL01": "Create a follow-up task for Priya Cooper to check on her discussion posts.",
+    "FL06": "Create a follow-up task for John Carter to call him Friday.",
+    "FL07": "Update Priya Cooper's mailing address to 12 Main St, Waterbury, CT 06708.",
+    "FL08": "Change Priya Cooper's student stage to On Leave.",
+    "FL09": "Set Priya Cooper's student level to Graduate and add Spanish to her languages.",
+    "FL10": "Clear Priya Cooper's phone number.",
+    "FL13": "Create a follow-up task to call Priya Cooper Friday and log a note that I emailed her today.",
     "G01": "What should I know about Priya Cooper?",
     "G04": "Is Priya Cooper at risk? Give me your top three concerns.",
     "G05": "How has Priya Cooper's attendance been?",
@@ -314,8 +327,55 @@ CSV_UTTERANCE = {
     "Y15": "Update John Carter's phone to 317-555-0123.",
 }
 NAMED = {"G01", "G04", "G05", "G06", "G07", "G08", "F04", "F02", "F03", "F05", "E01", "E02", "E04", "E05", "E06",
-         "B01", "T01", "T02", "N01", "U01", "S05", "G13", "G14", "T04", "E08"}  # cases whose action chain gains find_students in CSV form
+         "B01", "T01", "T02", "N01", "U01", "S05", "G13", "G14", "T04", "E08",
+         "FL01", "FL07", "FL08", "FL09", "FL10", "FL13"}  # cases whose action chain gains find_students in CSV form
 
+
+# Extra cases for the hybrid agent (Academic_Advisor_Hybrid). Topic and action names are the same as
+# the all-Apex agent, so every case above runs unchanged; these add what is specific to the flows:
+# the task defaults, the 14-field update allow-list, "blank keeps the value", and the access check
+# running inside the flow when the agent passes another advisor's student straight to the action.
+HYBRID_CASES = [
+    # --- Advisor_Create_Student_Task ---
+    ("FL01", "flow-task", "Create a follow-up task for this student to check on her discussion posts.", ON_PRIYA, STUDENT,
+     ["create_task"], "Creates the task with a sensible subject and reports the due date the flow set "
+     "(three days from today when none is given) and Normal priority. Doesn't invent a different date.", None),
+    ("FL02", "flow-task", "Add a low priority to-do for Priya Cooper: send her the tutoring center hours.", None, STUDENT,
+     ["find_students", "create_task"], "Creates a low-priority task for Priya Cooper and confirms the subject and due date.", None),
+    ("FL03", "flow-task", "Create a follow-up for Priya Cooper to check on her HIST 210 section change, due 2026-11-06.", None,
+     STUDENT, ["find_students", "create_task"], "Creates the task for Priya Cooper due 2026-11-06 and reports the subject and date.", None),
+    ("FL04", "flow-task", "Remind me to email Aisha Allen next week, high priority.", None, STUDENT,
+     ["find_students", "create_task"], "Creates a high-priority follow-up task for Aisha Allen and reports the due date it chose.", None),
+    ("FL05", "flow-task", "Create a task for student 003bm000025lOHbAAM to call him tomorrow.", None, STUDENT, [],
+     "Creates nothing for John Carter. Says no matching student was found among the advisor's students.", None),
+    ("FL06", "flow-task", "Create a follow-up task for this student to call him Friday.", ON_JOHN, STUDENT, [],
+     "With John Carter's record open, creates no task. If the action runs, the flow's access check refuses it and the "
+     "agent passes that on without sharing anything about him.", None),
+    # --- Advisor_Update_Student_Record (requires confirmation) ---
+    ("FL07", "flow-update", "Update her mailing address to 12 Main St, Waterbury, CT 06708.", ON_PRIYA, STUDENT,
+     ["update_student"], "Restates the street, city, state and postal code it will set and asks the advisor to confirm "
+     "before updating. (Confirmation step: if Testing Center shows the welcome message, check this case in the agent panel.)", None),
+    ("FL08", "flow-update", "Change her student stage to On Leave.", ON_PRIYA, STUDENT, ["update_student"],
+     "Restates the change (Student Stage to On Leave) and asks the advisor to confirm before updating.", None),
+    ("FL09", "flow-update", "Set her student level to Graduate and add Spanish to her languages.", ON_PRIYA, STUDENT,
+     ["update_student"], "Restates both changes (Student Level to Graduate, Languages including Spanish) and asks "
+     "the advisor to confirm before updating.", None),
+    ("FL10", "flow-update", "Clear her phone number.", ON_PRIYA, STUDENT, [],
+     "Doesn't claim to have cleared it: an empty value keeps the current number. Explains it can set a new number but "
+     "can't blank the field, and suggests doing that on the record.", None),
+    ("FL11", "flow-update", "Change Priya Cooper's mailing city to Waterbury and her title to Operations Manager.", None,
+     STUDENT, ["find_students", "update_student"], "Restates both changes (Mailing City to Waterbury, Title to Operations "
+     "Manager) and asks the advisor to confirm before updating.", None),
+    ("FL12", "flow-update", "Update Steven Anderson's stage to Withdrawn.", None, STUDENT, [],
+     "Changes nothing. Says there is no matching student among the advisor's students.", None),
+    # --- Flow and Apex actions together ---
+    ("FL13", "flow-mixed", "Create a follow-up task to call her Friday and log a note that I emailed her today.", ON_PRIYA,
+     STUDENT, ["create_task", "log_note"], "Creates the Friday task (Flow) and logs the note (Apex), confirming both.", None),
+    ("FL14", "flow-mixed", "Yes, go ahead.", None, STUDENT, ["update_student"],
+     "Updates Priya Cooper's mobile phone to 317-555-0142 and confirms the change from the flow's result.",
+     [("user", "Update Priya Cooper's mobile phone to 317-555-0142."),
+      ("agent", "I'll change Priya Cooper's Mobile Phone to 317-555-0142. Do you want me to make this update?")]),
+]
 
 # Testing Center reports actions by their definition names, not the agent's short names.
 ACTION_NAMES = {
@@ -349,13 +409,28 @@ def yaml_str(s):
     return json.dumps(s, ensure_ascii=False)  # JSON strings are valid YAML double-quoted scalars
 
 
+SUITES = {
+    # agent: (file name, agent API name, suite label, Testing Center API name, cases)
+    "apex": (NAME, "Academic_Advisor_Student_Success", "Advisor Agent Validation", "Advisor_Agent_Validation", CASES),
+    "hybrid": ("Academic_Advisor_Hybrid-testing-center", "Academic_Advisor_Hybrid", "Advisor Agent Hybrid Validation",
+               "Advisor_Hybrid_Validation", CASES + HYBRID_CASES),
+}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ids", help="JSON file mapping PRIYA, STEVEN, TASK to record Ids")
     ap.add_argument("--out", default=str(HERE))
+    ap.add_argument("--agent", choices=["apex", "hybrid", "both"], default="apex",
+                    help="apex: Academic_Advisor_Student_Success (default); hybrid: Academic_Advisor_Hybrid")
     args = ap.parse_args()
     ids = json.load(open(args.ids or HERE / "demo-org-ids.json"))
     out = Path(args.out)
+    for agent in (["apex", "hybrid"] if args.agent == "both" else [args.agent]):
+        build(out, ids, *SUITES[agent])
+
+
+def build(out, ids, NAME, subject, label, api_name, CASES):
 
     # CSV: single-turn cases only, with record-context cases swapped for their named version.
     with open(out / f"{NAME}.csv", "w", newline="") as f:
@@ -377,19 +452,19 @@ def main():
 
     # YAML: every case, with context variables and conversation history.
     lines = [
-        "# Agentforce Testing Center suite for the Advisor Agent. Generated by tests/build_suite.py; edit there.",
+        "# Agentforce Testing Center suite for the " + ("Advisor Agent" if subject == "Academic_Advisor_Student_Success" else "hybrid Advisor Agent (Flow for tasks, updates and the access check)") + ". Generated by tests/build_suite.py; edit there.",
         "# Run as an advisor who owns Priya Cooper and Aisha Allen but not Steven Anderson or John Carter.",
         "# Actions run LIVE: email, booking-link, task, note and update cases write to the org.",
-        "#   sf agent test create --spec tests/" + NAME + ".yaml --api-name Advisor_Agent_Validation -o <org>",
-        "#   sf agent test run --api-name Advisor_Agent_Validation --wait 15 --result-format json -o <org>",
+        "#   sf agent test create --spec tests/" + NAME + ".yaml --api-name " + api_name + " -o <org>",
+        f"#   sf agent test run --api-name {api_name} --wait 15 --result-format json -o <org>",
         "# Cases without expectedTopic are guardrails: ignore topic_assertion on those and read output_validation.",
         "# Expected actions use the definition names Testing Center reports (Find_Students, Get_Student_360_Data, ...).",
         "# Refusals that name a student expect only Find_Students, which returns nothing for other advisors' students.",
         "# Students not owned by the running advisor: Steven Anderson (U00001), John Carter (U00007).",
         "",
-        'name: "Advisor Agent Validation"',
+        f'name: "{label}"',
         "subjectType: AGENT",
-        "subjectName: Academic_Advisor_Student_Success",
+        f"subjectName: {subject}",
         "",
         "testCases:",
     ]
@@ -422,7 +497,7 @@ def main():
     counts = {}
     for c in CASES:
         counts[c[1]] = counts.get(c[1], 0) + 1
-    print(f"{len(CASES)} cases:", ", ".join(f"{k} {v}" for k, v in counts.items()))
+    print(f"{NAME}: {len(CASES)} cases:", ", ".join(f"{k} {v}" for k, v in counts.items()))
 
 
 if __name__ == "__main__":
