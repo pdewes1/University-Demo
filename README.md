@@ -2,13 +2,13 @@
 
 ## About me
 
-I'm Paul Dewes, and I've worked in the Salesforce ecosystem since 2019.
+Hi There! My name is Paul Dewes, and I've worked in the Salesforce ecosystem since 2019.
 
-**Salesforce Support.** I started at Salesforce on the Marketing Cloud Engagement Support team and moved up quickly to Swarm Lead, supporting a group of Support Engineers. There I worked on Marketing Cloud Engagement and Data 360.
+**Salesforce Support.** I started at Salesforce on the Marketing Cloud Engagement Support team and moved up quickly to Swarm Lead, supporting a group of Support Engineers better work with our customers. There I worked on Marketing Cloud Engagement and Data 360 when it first launched.
 
-**Gerent / TELUS.** A former colleague asked me to help start a Marketing Cloud practice at Gerent. We built new processes and implemented Marketing Cloud, Data 360 and Agentforce for many different clients. When Agentforce first launched, I was in the first group to build proofs of concept for customers.
+**Gerent / TELUS.** A former colleague asked me to help start a Marketing Cloud practice at Gerent where I joined in January of 2023. We built new processes and reusable assets for the Marketing Cloud & Data 360 practice and implemented Marketing Cloud, Data 360 and Agentforce for a variety of different clients across multiple verticals. When Agentforce first launched, I was in the first group to build proofs of concept for customers.
 
-**Today.** I'm a senior member of the team, specializing in Data 360, and I keep taking on new challenges such as Marketing Cloud Next.
+**Today.** I'm a senior member of the Solution Architect team, specializing in Data 360, and I keep taking on new challenges and responsibilities such as Marketing Cloud Next and assisting with pre-sales conversations.
 
 **Outside of work:**
 
@@ -32,12 +32,12 @@ I'm Paul Dewes, and I've worked in the Salesforce ecosystem since 2019.
 **Post University wants more of its students to stay enrolled and graduate.** Advisors are the main way the university can step in when a student starts to drift, but they find out late. The early signs are spread across three systems:
 
 - missed classes, late submissions and a drop in logins, in Canvas;
-- a FAFSA that hasn't been verified, in Banner;
+- a FAFSA that hasn't been verified for a new year or semester, in Banner;
 - no advising contact in weeks, an overdue follow-up, or a change in status such as going on leave, in the CRM.
 
-To see the whole picture, an advisor has to open all three and piece it together by hand, for each student. With a large caseload, that prep work crowds out outreach. By the time an advisor reaches out, the student has often already decided to stop out.
+To see the whole picture, an advisor has to open all three and piece it together by hand, for each student. With a large caseload, that prep work crowds out outreach. By the time an advisor reaches out, the student has often been struggling for quite some time.
 
-This project designs and validates an **Advisor Agent** in Agentforce. It shortens the time from "a student starts slipping" to "their advisor reaches out with a way to book a meeting," and it removes the prep work that stands in the way. The agent pulls one trusted view of a student from Data 360 (built from Banner, Canvas and the CRM), tells the advisor what needs attention, and turns that into action: an outreach email with a booking link, a follow-up task and a note. It only ever works on the advisor's own students.
+This project designs and validates an **Advisor Agent** in Agentforce. It shortens the time from "a student starts struggling" to "their advisor reaches out with a way to book a meeting to help," and it removes the prep work that stands in the way. The agent pulls one trusted view of a student from Data 360 (built from Banner, Canvas and the CRM), tells the advisor what needs attention, and turns that into action: an outreach email with a booking link, a follow-up task and a note. It only ever works on the advisor's own students.
 
 > **Demo scenario.** This is a design and validation exercise. It is not affiliated with or endorsed by the university, and all student data is synthetic. No real student data is used.
 
