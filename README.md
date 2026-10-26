@@ -49,7 +49,7 @@ That mix of students is also what makes keeping them enrolled hard. When work, f
 - a FAFSA that hasn't been verified for a new year or semester, in Banner;
 - no advising contact in weeks, an overdue follow-up, or a change in status such as going on leave, in the CRM.
 
-To see the whole picture, an advisor has to open all three and piece it together by hand, for each student. With a large caseload, that prep work crowds out outreach. By the time an advisor reaches out, the student has often been struggling for quite some time.
+To see the whole picture, an advisor has to open all three and piece it together by hand, for each student. With a large caseload, that prep work crowds out outreach. By the time an advisor reaches out, the student has often been struggling silently for quite some time.
 
 ## The project
 
