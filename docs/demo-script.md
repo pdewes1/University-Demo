@@ -25,7 +25,7 @@ A 10-minute live demo of the Advisor Agent, with exact prompts. Run it as the ad
 | 8 | Priya's record page | `Summarize this student.` | Same summary, using the record in view. |
 | 9 | Slack (optional) | `@Agentforce what's Priya Cooper's last advising contact?` | The note from step 5 shows up as the last contact. Shows the same agent where advisors already work. |
 
-Close with the three pilot measures and the break-even from the [cost model](cost-model.md): about 5.5 retained students pays for year 1.
+Close with the three pilot measures and the business case from [costs and savings](cost-model.md): a small number of retained students covers the first year.
 
 ## After the session
 

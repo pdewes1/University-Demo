@@ -40,7 +40,6 @@ I built this with an AI assistant (Claude) working against the org through the S
 - **Compile before publishing.** Every agent version was compiled through the authoring API before it was published and activated. The current warning is that the agent doesn't read the search's match count, which is intended.
 - **Test the agent, not just the actions.** Four Testing Center runs (195 cases). Every failure was read, not just counted: some were real agent issues, some were wrong expectations in my own suite, and in a few cases the LLM judge passed a wrong answer (a future follow-up called "overdue") or failed a right one (the advisor's own Carters). Those misreads are why each run's replies were checked by hand.
 - **Apex tests.** 21 tests, each refusal path asserted, Calendly mocked; about 86% coverage.
-- **Costs are cited.** The cost model's prices come from the Flex Credits rate card and public pricing pages, linked in the doc; the scale inputs are labelled as placeholders.
 - **Negative control.** The direct Data 360 query showed why the action-layer check is needed.
 
 ## What still needs a human decision
