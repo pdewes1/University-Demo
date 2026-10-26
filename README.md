@@ -1,5 +1,34 @@
 # Post University Student Success Agents
 
+## About me
+
+I'm Paul Dewes, and I've worked in the Salesforce ecosystem since 2019.
+
+**Salesforce Support.** I started at Salesforce on the Marketing Cloud Engagement Support team and moved up quickly to Swarm Lead, supporting a group of Support Engineers. There I worked on Marketing Cloud Engagement and Data 360.
+
+**Gerent / TELUS.** A former colleague asked me to help start a Marketing Cloud practice at Gerent. We built new processes and implemented Marketing Cloud, Data 360 and Agentforce for many different clients. When Agentforce first launched, I was in the first group to build proofs of concept for customers.
+
+**Today.** I'm a senior member of the team, specializing in Data 360, and I keep taking on new challenges such as Marketing Cloud Next.
+
+**Outside of work:**
+
+- I'm the Game Master for three different tabletop roleplaying campaigns.
+- I ride motorcycles in great places and on race tracks.
+- I recently took my mom on her first vacation since I was born, to my favorite place in the US: Glacier National Park.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/about/motorcycle.jpg" alt="Paul cornering a KTM motorcycle on a winding forest road"></td>
+    <td width="50%"><img src="docs/images/about/glacier.jpg" alt="Paul and his mom at an overlook in Glacier National Park"></td>
+  </tr>
+  <tr>
+    <td align="center"><em>On a favorite stretch of road</em></td>
+    <td align="center"><em>Glacier National Park, with my mom</em></td>
+  </tr>
+</table>
+
+---
+
 **Post University wants more of its students to stay enrolled and graduate.** Advisors are the main way the university can step in when a student starts to drift, but they find out late. The early signs are spread across three systems:
 
 - missed classes, late submissions and a drop in logins, in Canvas;
