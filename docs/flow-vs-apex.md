@@ -13,7 +13,9 @@ They have the same instructions, topics and action names, so the same Testing Ce
 
 **Flow** for anything an admin should be able to read and change: the access check, creating a record, updating fields, branching on a value.
 
-**Apex** for work Flow handles badly: parsing nested JSON, HTTP callouts with custom headers, calls to the model, free-text processing, and binary note content.
+**Apex** for work Flow handles badly or can't do at all: parsing nested JSON, HTTP callouts with custom headers, calls to the model, free-text processing, and Enhanced Notes (which flows can't create).
+
+The question for each action was: *could a Post admin read this in Flow Builder and safely change it?* If yes, Flow. If the logic would turn into a wall of formulas and loops, or the platform blocks it, Apex.
 
 ## Which action uses what
 
@@ -29,6 +31,79 @@ They have the same instructions, topics and action names, so the same Testing Ce
 | Log Student Note | Apex | Salesforce doesn't allow it: deploying a flow that creates an Enhanced Note fails with "You can't create ContentNote records in a flow" (tested 2026-10-26). Classic Notes would work in Flow, but they show under Notes & Attachments instead of Notes |
 
 The Apex actions keep their own check (`StudentAccess`), so every action in both agents checks ownership before it touches anything.
+
+## Action by action
+
+### Check student access: Flow
+
+**What it does.** Confirms the student belongs to the advisor before any other step reads or writes anything.
+
+**Why Flow.** It's a single lookup: get the Contact where the Id matches *and* the owner is the running user. If nothing comes back, refuse. That fits in four elements an admin can read at a glance. The ownership condition is in the lookup's filter, so another advisor's student is never even loaded into the flow.
+
+**Why a subflow.** Every flow action calls the same `Advisor_Check_Student_Access`, so the rule exists in one place. If Post later decides "assigned advisor" means an Education Cloud advising relationship, not Contact owner, an admin changes one flow and every action follows.
+
+**What would push it back to Apex.** If the rule needed record-level sharing *and* field-level security enforced (Apex's `WITH USER_MODE`), or became a multi-object check such as success teams with date ranges.
+
+### Create Student Task: Flow
+
+**What it does.** Creates a follow-up task on the student, assigned to the advisor.
+
+**Why Flow.** It's one record create with three defaults: due in three days, Normal priority, Not Started. This is exactly the work Flow was built for, and it's the action admins are most likely to want to adjust, for example a different default due date or a task record type.
+
+**What would push it back to Apex.** Nothing likely. Bulk task creation across many students would still be fine in Flow.
+
+### Update Student Record: Flow
+
+**What it does.** Changes allowed fields on the student, after the advisor confirms in the conversation.
+
+**Why Flow.** It's get the record, set the fields that were given, save. Each of the 14 allowed fields is a named input, so the input list *is* the allow-list. An admin can see exactly what the agent can change, and adding or removing a field is one input and one assignment. It also means the model fills in named fields instead of writing a JSON object, which removes a parsing step that can fail.
+
+**The trade-off.** Fourteen inputs make the flow wider than the Apex version, which takes one JSON map. The Apex version also enforces field-level security through `USER_MODE`; the flow relies on its fixed input list instead.
+
+**What would push it back to Apex.** Dynamic rules, such as "this field is editable only when the stage is X", or an allow-list long enough that Flow Builder becomes hard to read.
+
+### Find Students: Apex
+
+**What it does.** Searches the advisor's own students from whatever the advisor typed: "Aisha Chen U00974", "pull up priya cooper's record", an email or a record Id.
+
+**Why Apex.** It's text processing. The action splits the text into words, recognizes Student IDs, emails and record Ids anywhere in it, drops filler words and possessives, builds a query with a variable number of name conditions, and falls back to word pairs if the full match finds nothing. Flow has no loop-over-words or regular expressions, and can't build a query with a varying number of conditions. Each fix from Testing Center runs 3 and 4 was a few lines of Apex; in Flow, each would have been a new branch.
+
+**What would move it to Flow.** If search were only ever an exact Student ID or email, a single Get Records would do.
+
+### Get Student 360 Data: Apex
+
+**What it does.** Reads the Student 360 data graph from Data 360 and the CRM's advising activity, and turns them into a plain-language summary.
+
+**Why Apex.** The data graph comes back as nested JSON, several levels deep: the unified student, then identity links, then Canvas and Banner records under each. The action walks that tree, counts attendance and works out the rate, averages graded work, totals page-view minutes, applies the financial aid allow-list so amounts never reach the agent, and adds the last advising contact and overdue follow-ups. Flow can't parse arbitrary nested JSON, and the arithmetic over nested collections would be dozens of loops and assignments.
+
+**What would move it to Flow.** Probably nothing: this is the core data shaping.
+
+### Draft Student Outreach Email: Apex
+
+**What it does.** Writes a supportive check-in email from the 360 summary, with a single-use booking link.
+
+**Why Apex.** Two reasons:
+
+- **The model never sees the student's name or the link.** The action builds the prompt itself, calls the Models API, and only after the response fills in `{FIRST_NAME}` and the real booking URL. Flow could call a Prompt Builder template, but the template approach was tried first and dropped: record inputs came through empty, and Trust Layer masking garbled names ("Hi Cooper").
+- **It chains steps with error handling.** It checks access, creates the Calendly link, calls the model and replaces placeholders, and gives a clear message if any step fails.
+
+**What would move it to Flow.** A Prompt Builder template that reliably takes the summary as input, plus a way to fill in the name and link after generation.
+
+### Create Calendly Booking Link: Apex
+
+**What it does.** Creates a single-use Calendly link for that student, pre-filled with their name and email.
+
+**Why Apex.** It's an HTTP callout. It goes through a Named Credential, but Calendly rejected the credential's standard header fields, so the action sends a custom `Authorization` header. It also builds the request body, URL-encodes the name and email onto the link, and turns Calendly's error codes into advisor-friendly messages (expired token, advisor not in the organization, rate limited). Flow's HTTP callout action needs an External Service registration and handles custom auth headers and per-status errors poorly.
+
+**What would move it to Flow.** A Calendly OAuth connection that works with standard Named Credential auth, and an External Service built from Calendly's API spec.
+
+### Log Student Note: Apex
+
+**What it does.** Logs an advising note on the student.
+
+**Why Apex.** Salesforce won't allow it in Flow. Deploying a flow that creates an Enhanced Note (`ContentNote`) fails with "You can't create ContentNote records in a flow." (tested on 2026-10-26). The Apex action also escapes the text as HTML and keeps line breaks as paragraphs.
+
+**What would move it to Flow.** Switching to classic Notes, which flows can create. They show under Notes & Attachments rather than the Notes list, so it was kept in Apex.
 
 ## Flow check versus Apex check
 
