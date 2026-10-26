@@ -35,11 +35,12 @@ It is grounded in a Data 360 data graph over Banner and Canvas, which stay in Sn
 | From → To | Mechanism | Owner |
 |---|---|---|
 | Banner, Canvas → Snowflake | Existing university integrations | University IT |
+| Banner → CRM (nightly automation) | Nightly upsert of new and changed students into Contacts, keyed on Student ID: name, email, stage, level, and the assigned advisor as Contact owner. The search and access check depend on it. Demo org: loaded once | University IT |
 | Snowflake → Data 360 | Direct Access data streams (zero copy), key-pair auth | Data engineering |
 | CRM → Data 360 | Salesforce CRM data stream (ingest) | Salesforce team |
 | Data 360 → agent | Data graph `Student_360_Graph` via `ConnectApi.CdpQuery.getDataGraphData` in Apex | Salesforce team |
 | CRM → agent | Live `WITH USER_MODE` queries on Task, Event and Note for last advising contact and overdue follow-ups (not through the daily graph refresh) | Salesforce team |
-| Agent → LLM | Einstein Models API through the Trust Layer (`sfdc_ai__DefaultGPT4Omni`) | Salesforce team |
+| Agent → LLM | Einstein Models API through the Trust Layer (`sfdc_ai__DefaultGPT4Omni`). The Trust Layer also covers the agent's own reasoning calls; it isn't drawn on the diagrams | Salesforce team |
 | Agent → Calendly | Named Credential `Calendly` → `POST /scheduling_links` | Salesforce team (Calendly admin owns the token) |
 | Agent → Slack | Agentforce in Slack connection; Slack users mapped to Salesforce users | Slack admin and Salesforce team |
 
@@ -54,31 +55,33 @@ It is grounded in a Data 360 data graph over Banner and Canvas, which stay in Sn
 
 | Risk | Impact | Mitigation in place / needed |
 |---|---|---|
-| Data 360 doesn't filter on the advising relationship | One advisor could see another's student | **In place:** `StudentAccess` check runs first in every action. **Needed:** Apex tests that keep it there. |
+| Data 360 doesn't filter on the advising relationship | One advisor could see another's student | **In place:** `StudentAccess` check runs first in every action, and Apex tests assert each action refuses another advisor's student. **Needed:** run them in CI. |
 | Wrong identity merge | One student's data shown as another's | Exact Student ID rule ranks first. **Needed:** review the fuzzy name rules and sample merges. |
-| Financial aid amounts copied into Data 360 by the graph | Amounts stored outside Banner even though the agent can't see them | **In place:** Apex allow-list, so advisors and the agent get status only. **Needed:** drop amount fields from the graph projection. |
 | Calendly token is over-privileged and person-owned | Leak or a staff change breaks booking | **Needed:** OAuth app on a service account; rotate. |
 | Unused single-use links pile up | Calendly clutter, stray bookable links | **Needed:** create the link at send time, or expire links. |
 | Data graph refreshes daily | Agent can be up to a day behind | Acceptable for advising; enable incremental refresh if needed. CRM activity (tasks, notes) is read live, not from the graph. |
 | Student search is a name-word heuristic | Misspellings find nothing; unusual phrasing could miss a student | Owner filter is enforced regardless. **Needed:** consider SOSL or fuzzy matching, still owner-filtered. |
+| Nightly Banner → CRM load fails or lags | New students missing; advisor changes not reflected, so the wrong advisor passes the owner check | **Needed:** monitor the job, and alert on failure (see [operations](operations.md)). |
 | Testing Center results count against data storage | The 5 MB dev org filled after three runs and blocked agent publishing | Delete runs after exporting them. A production org has far more storage. |
 
 ## Unknowns
 
-- Volume and cost at real scale: Data 360 credits for federation and graph refresh, plus Agentforce actions per advisor per day.
+- Real volume and cost. The [cost model](cost-model.md) estimates $31k a year to run for 40 advisors at list price; confirm scale, contracted rates and how Direct Access reads are billed.
 - Agent behaviour beyond the four Testing Center runs (195 cases, latest 19/20 on v8). Record updates and multi-turn conversations are still untested there. See [validation](../validation/README.md).
 - Slack link rendering and formatting for email drafts.
 
 ## Exit conditions for build
 
-- [ ] Apex tests at 75% or more coverage, including the refusal paths, in CI
+- [ ] Apex tests at 75% or more coverage, including the refusal paths, in CI. **Written and passing:** 21 tests, about 86% coverage; CI still to wire up
 - [ ] Agent test suite (Testing Center) passes the persona matrix, adversarial rows included. Built and run four times (latest 19/20); make it a gate on every agent change
 - [ ] Second advisor tested end to end with their own Agentforce license
-- [x] Financial aid visibility decided: advisors see status only (FAFSA, verification, SAP)
+- [x] Financial aid visibility decided: advisors see status only (FAFSA, verification, SAP). Amount fields dropped from the data graph
 - [ ] Calendly moved to OAuth on a service account; personal token revoked
 - [ ] Enhanced Notes enabled; notes confirmed as `ContentNote`
 - [ ] Baselines captured for the three pilot measures, plus last term's persistence for the advising team in the pilot
 - [ ] Calendly booking events written back to the CRM, so bookings can be measured
+
+- [ ] Old `Academic_Advisor_Agent` flow deleted from the org
 
 ## Fallbacks
 

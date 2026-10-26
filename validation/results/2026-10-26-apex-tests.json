@@ -1,0 +1,91 @@
+{
+  "run": "2026-10-26, tooling runTestsSynchronous, class AdvisorAgentTests",
+  "testsRun": 21,
+  "failures": 0,
+  "passed": [
+    "accessReturnsOnlyOwnedStudents",
+    "advisingActivitySaysNoneOverdue",
+    "advisingActivitySummarizesContactAndFollowUps",
+    "bookingLinkIsSingleUseAndPrefilled",
+    "bookingLinkRefusedForOtherStudentAndReportsCalendlyErrors",
+    "emailPromptKeepsNamesAndLinksOutOfTheModel",
+    "emailRefusedForOtherStudentBeforeAnyCallout",
+    "financialAidIsReducedToStatusOnly",
+    "listEventTypesReturnsSlimRows",
+    "noteIsLoggedForOwnStudentOnly",
+    "prefillHandlesEmptyValues",
+    "searchExplainsItsLimitsAndNeedsInput",
+    "searchFindsOwnStudentByNameIdEmailAndRecordId",
+    "searchNeverReturnsAnotherAdvisorsStudent",
+    "student360OwnStudentReachesDataCloudLookup",
+    "student360RefusesOtherAdvisorsStudent",
+    "student360WithoutStudentIdStillReturnsCrmActivity",
+    "summaryCoversEveryDataArea",
+    "taskIsCreatedForOwnStudentOnly",
+    "updateChangesAllowedFieldsOnly",
+    "updateRefusesOtherStudentsAndBadInput"
+  ],
+  "coverage": {
+    "CreateStudentTaskAction": {
+      "lines": 33,
+      "notCovered": 2,
+      "percent": 93.9
+    },
+    "UpdateStudentRecordAction": {
+      "lines": 52,
+      "notCovered": 2,
+      "percent": 96.2
+    },
+    "Student360DataAction": {
+      "lines": 169,
+      "notCovered": 27,
+      "percent": 84.0
+    },
+    "LogStudentNoteAction": {
+      "lines": 36,
+      "notCovered": 9,
+      "percent": 75.0
+    },
+    "StudentAccess": {
+      "lines": 6,
+      "notCovered": 0,
+      "percent": 100.0
+    },
+    "StudentAdvisingActivity": {
+      "lines": 48,
+      "notCovered": 8,
+      "percent": 83.3
+    },
+    "CalendlyService": {
+      "lines": 33,
+      "notCovered": 0,
+      "percent": 100.0
+    },
+    "FindStudentsAction": {
+      "lines": 69,
+      "notCovered": 0,
+      "percent": 100.0
+    },
+    "CreateCalendlyBookingLinkAction": {
+      "lines": 26,
+      "notCovered": 1,
+      "percent": 96.2
+    },
+    "DraftStudentEmailAction": {
+      "lines": 84,
+      "notCovered": 27,
+      "percent": 67.9
+    },
+    "ListCalendlyEventTypesAction": {
+      "lines": 16,
+      "notCovered": 2,
+      "percent": 87.5
+    }
+  },
+  "overallCoverage": {
+    "lines": 572,
+    "covered": 494,
+    "percent": 86.4
+  },
+  "notCoveredByDesign": "DraftStudentEmailAction's Models API call and Student360DataAction's Data 360 graph read cannot run in Apex tests; their refusal paths and helpers are covered."
+}

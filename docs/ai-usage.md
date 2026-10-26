@@ -4,7 +4,7 @@ I built this with an AI assistant (Claude) working against the org through the S
 
 ## What it produced
 
-- Eleven Apex classes: the agent actions, the owner-filtered student search, the CRM advising-activity reader, the Calendly client and the shared access check.
+- Eleven Apex classes and one test class (21 tests): the agent actions, the owner-filtered student search, the CRM advising-activity reader, the Calendly client and the shared access check.
 - The Agent Script for `Academic_Advisor_Student_Success`, through eight published versions.
 - The `Student_360_Graph` data graph definition, plus the Calendly credential and permission set setup.
 - The validation runs in `validation/`, the Testing Center suites in `tests/`, and this documentation.
@@ -26,7 +26,8 @@ I built this with an AI assistant (Claude) working against the org through the S
 | Run Testing Center headlessly through the Grid API | Every run sent a placeholder instead of the utterance | Generated CSV and YAML suites; runs done in the Testing Center UI |
 | Match a Student ID only when it was the whole search | "Aisha Chen U00974" found nothing (run 3) | Student ID, email or record Id is picked out anywhere in the text |
 | Require every search word to match | "Mark Priya Cooper's follow-up" found nothing (run 4) | Falls back to adjacent word pairs, still inside the owner filter |
-| Remove a field by editing the data graph | Data 360 graphs can only add fields | Graph deleted and recreated without the Canvas advisor field |
+| Remove a field by editing the data graph | Data 360 graphs can only add fields | Graph deleted and recreated without the Canvas advisor field, then again without the aid amounts |
+| Pick the test's "other advisor" by standard User fields | This org's Apex wouldn't compile references to `User.Alias` or `User.IsActive` | Tests select another user set up for Calendly, through the custom field |
 
 ## How the output was checked
 
@@ -34,6 +35,8 @@ I built this with an AI assistant (Claude) working against the org through the S
 - **The live version is the reference.** The repo's Apex, agent script and Data 360 definitions were pulled from or compared with what is deployed.
 - **Compile before publishing.** Every agent version was compiled through the authoring API before it was published and activated. The current warning is that the agent doesn't read the search's match count, which is intended.
 - **Test the agent, not just the actions.** Four Testing Center runs (195 cases). Every failure was read, not just counted: some were real agent issues, some were wrong expectations in my own suite, and in a few cases the LLM judge passed a wrong answer (a future follow-up called "overdue") or failed a right one (the advisor's own Carters). Those misreads are why each run's replies were checked by hand.
+- **Apex tests.** 21 tests, each refusal path asserted, Calendly mocked; about 86% coverage.
+- **Costs are cited.** The cost model's prices come from the Flex Credits rate card and public pricing pages, linked in the doc; the scale inputs are labelled as placeholders.
 - **Negative control.** The direct Data 360 query showed why the action-layer check is needed.
 
 ## What still needs a human decision

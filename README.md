@@ -43,6 +43,7 @@ The three advising measures move within weeks, so they're what the pilot is judg
 | **Owner** | Provost's office (advising). The VP of Enrollment owns the phase 2 Admissions Agent. |
 | **Recommendation** | Build an Agentforce agent for advisors, grounded in a Data 360 data graph over Banner and Canvas. The Banner and Canvas streams stay in Snowflake (zero copy); the graph keeps a daily copy of only the fields the agent needs. Keep each system of record where it is. Check in the agent's actions that the student belongs to the advisor. |
 | **Success for the pilot** | Compared with baselines taken before launch: lower prep time per student, fewer days from an engagement drop to outreach, and a higher share of flagged students booking a meeting, with no guardrail breaches. |
+| **Investment** | About $31k a year to run for 40 advisors and $24k to build, at list prices. Keeping about 6 more students enrolled for a year pays for year 1. [Cost model](docs/cost-model.md) |
 | **Path to value** | Take baselines → pilot with one advising team → run the agent test suite and move Calendly to OAuth → roll out to all advisors and track persistence → phase 2 Admissions Agent |
 
 ### Assumptions that would change this
@@ -90,7 +91,7 @@ Illustrative, based on a real 360 summary for a synthetic student:
 
 | System | Owns | How Salesforce uses it |
 |---|---|---|
-| **Banner SIS** | Student profile, holds, financial aid | Read through Snowflake, zero copy |
+| **Banner SIS** | Student profile, holds, financial aid | Read through Snowflake, zero copy. A nightly automation also loads students into the CRM (below) |
 | **Canvas LMS** | Enrollments, submissions, attendance, page views, discussions | Read through Snowflake, zero copy |
 | **Snowflake** | The university's existing landing zone for Banner and Canvas | Direct Access data streams into Data 360 |
 | **Data 360** | Identity resolution, the unified student, the engagement score, the Student 360 data graph | Grounding for the agent |
@@ -101,13 +102,17 @@ Illustrative, based on a real 360 summary for a synthetic student:
 
 Nothing is written back to Banner, Canvas or Snowflake.
 
+**Nightly automation (Banner → CRM).** The diagram's arrow from Banner to the CRM is the student load: each night, new and changed students are upserted into Education Cloud as Contacts, keyed on Student ID, with name, email, stage and level, and the assigned advisor as the Contact owner. It's what makes the CRM search and the owner check work, so it's a production dependency owned by University IT. In the demo org the Contacts were loaded once from the synthetic data instead.
+
+**Einstein Trust Layer.** It isn't drawn on the diagrams, but it sits between the agent and the model on every call: the agent's own reasoning and the email draft. See trust boundary 2.
+
 ### Trust boundaries
 
 1. **Advising relationship.** Every action that takes a student calls [`StudentAccess.ownedStudent()`](force-app/main/default/classes/StudentAccess.cls) first: a `WITH USER_MODE` query plus a check that the advisor owns the Contact. This runs **before** any Data 360, LLM or Calendly call. The search ([`FindStudentsAction`](force-app/main/default/classes/FindStudentsAction.cls)) has the owner filter in its SOQL, so other advisors' students never reach the agent at all. Both are needed because Data 360 doesn't know who a student's advisor is (see [validation](validation/README.md)).
 2. **Einstein Trust Layer.** All model calls go through it. Student names are kept out of the prompt entirely; the model writes `{FIRST_NAME}` and Apex fills it in, because masking was mangling names.
 3. **No unreviewed outreach.** Emails are drafts only. Record updates need the advisor's confirmation and only touch allow-listed fields (owner and student ID can never change).
 4. **No invented links.** The Calendly link is created first and inserted by Apex, so the model never writes a URL. `calendly.com` is the only added Trusted URL.
-5. **Financial aid is status only.** Advisors see FAFSA, verification and satisfactory-academic-progress status. Award amounts, need, cost of attendance, Pell and the aid index are stripped in Apex (allow-list) before the agent sees the data. If asked, the agent refers the student to the financial aid office.
+5. **Financial aid is status only.** Advisors see FAFSA, verification and satisfactory-academic-progress status. Award amounts, need, cost of attendance, Pell and the aid index aren't in the data graph at all, and an Apex allow-list strips anything else before the agent sees the data. If asked, the agent refers the student to the financial aid office.
 6. **Least data in outreach.** The email prompt bars grades, scores, aid details and system names, so the student sees patterns, not numbers.
 
 ## Data 360
@@ -128,7 +133,7 @@ Nothing is written back to Banner, Canvas or Snowflake.
 - own student: allowed;
 - another advisor's student: refused before any side effect;
 - protected fields: rejected;
-- financial aid amounts: removed before the agent sees the data.
+- financial aid amounts: never reach the agent (now also dropped from the graph).
 
 A control query showed Data 360 alone would have exposed the other advisor's student.
 
@@ -142,6 +147,8 @@ A control query showed Data 360 alone would have exposed the other advisor's stu
 | 4 | v8 | 20 | 19 | Retests passed. Found extra words breaking the search |
 
 Each fix is in the [validation write-up](validation/README.md), along with the raw exports.
+
+**And the code has tests.** [`AdvisorAgentTests`](force-app/main/default/classes/AdvisorAgentTests.cls): 21 Apex tests, all passing, about 86% coverage (494 of 572 lines). They cover the refusal path of every action, the owner-filtered search, the aid allow-list, the advising-activity summary and the Calendly calls (mocked). The Models API call and the live Data 360 read can't run inside Apex tests. [Results](validation/results/2026-10-26-apex-tests.json)
 
 → [Method, results and raw outputs](validation/README.md)
 
@@ -213,7 +220,7 @@ Create the external credential and named credential, then set each advisor's eve
 ├── agent/
 │   └── Academic_Advisor_Student_Success.agent   Agent Script (live version 8)
 ├── force-app/main/default/
-│   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check
+│   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check, AdvisorAgentTests
 │   ├── objects/User/fields/                     Calendly_Event_Type_URI__c
 │   ├── cspTrustedSites/                         Calendly trusted URL
 │   └── permissionsets/                          Agent access, Calendly access
@@ -224,14 +231,19 @@ Create the external credential and named credential, then set each advisor's eve
 │   └── data-graphs/Student_360_Graph.json, .md  Graph definition and notes
 ├── integrations/
 │   └── calendly.md
+├── tools/cost_model.py                          Cost and investment model inputs and calculation
 ├── tests/                                       Testing Center suites (CSV upload, sf agent test YAML) and their generators
 ├── validation/
 │   ├── README.md                                Uncertainty, method, results for actions and four agent runs
 │   ├── persona-question-matrix.csv
-│   └── results/                                 Action guardrail outputs, Testing Center exports (runs 1-4)
+│   └── results/                                 Action guardrail outputs, Testing Center exports (runs 1-4), Apex test results
 └── docs/
     ├── execution-handoff.md                     One-pager for the build team
     ├── ai-usage.md                              What AI produced and how it was checked
+    ├── cost-model.md                            Run cost, build cost, break-even
+    ├── operations.md                            Observability, release gates, runbook
+    ├── demo-script.md                           Exact demo prompts and backup recording
+    ├── panel-prep.md                            Answers if a constraint changes
     └── images/
 ```
 
@@ -241,7 +253,7 @@ The build team's one-pager is [docs/execution-handoff.md](docs/execution-handoff
 
 - **Ready:** the Advisor Agent end to end, the Data 360 model, the Calendly link flow, and action-level access control.
 - **Before build:**
-  - Apex tests in CI;
+  - the Apex tests (written, 21 passing) wired into CI;
   - the Testing Center suite re-run on every agent change;
   - a second advisor tested with their own license;
   - Calendly moved to OAuth.
@@ -250,9 +262,9 @@ The build team's one-pager is [docs/execution-handoff.md](docs/execution-handoff
 ## Limitations
 
 - The data is synthetic, so the engagement score makes no predictive claims. The caps (20 views, 5 posts) are tuned to the sample and need rescaling for a real term.
-- No Apex test classes yet, so the code can't deploy to production as-is.
+- Apex coverage is about 86%, above the 75% deploy minimum, but the Models API call and the live Data 360 read are only tested end to end, not in Apex. The original agent's flow (`Academic_Advisor_Agent`) is still in the demo org and has no tests; delete it before deploying.
 - Record updates and multi-turn conversations aren't covered by the Testing Center runs (the update's confirmation step doesn't run there, and the CSV upload is single-turn). Check them in the agent panel.
 - The student search matches name words, not fuzzy spellings, so a misspelled name finds nothing.
-- The data graph still projects financial aid amounts. Apex strips them before the agent sees anything, but the copy exists in Data 360.
 - Contact owner stands in for "assigned advisor".
+- Costs are list-price planning numbers with placeholder scale. See the [cost model](docs/cost-model.md).
 - AI was used throughout. See [docs/ai-usage.md](docs/ai-usage.md) for what it got wrong and how each piece was verified.
