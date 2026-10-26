@@ -24,7 +24,7 @@ Short answers for "what if we changed X?" Each says what changes, what doesn't, 
 
 - **Access and correctness:** no change. The owner filter and per-student check don't depend on volume.
 - **Search:** capped at 25 results per search; fine for caseloads of a few hundred.
-- **Cost:** agent actions scale with use, not with students. See the [cost model](cost-model.md) sensitivity table: twice the usage takes year 1 from $55k to $75k.
+- **Cost:** agent actions scale with use, not with students, so more advisors means more cost only as they use it. Data 360 cost rises with data volume. See [costs and savings](cost-model.md).
 - **Data 360:** more rows per refresh. Consider incremental graph refresh, and accelerating the busiest Snowflake streams.
 
 ## Assigned advisor comes from Education Cloud, not Contact owner

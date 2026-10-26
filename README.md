@@ -43,7 +43,7 @@ The three advising measures move within weeks, so they're what the pilot is judg
 | **Owner** | Provost's office (advising). The VP of Enrollment owns the phase 2 Admissions Agent. |
 | **Recommendation** | Build an Agentforce agent for advisors, grounded in a Data 360 data graph over Banner and Canvas. The Banner and Canvas streams stay in Snowflake (zero copy); the graph keeps a daily copy of only the fields the agent needs. Keep each system of record where it is. Check in the agent's actions that the student belongs to the advisor. |
 | **Success for the pilot** | Compared with baselines taken before launch: lower prep time per student, fewer days from an engagement drop to outreach, and a higher share of flagged students booking a meeting, with no guardrail breaches. |
-| **Investment** | About $31k a year to run for 40 advisors and $24k to build, at list prices. Keeping about 6 more students enrolled for a year pays for year 1. [Cost model](docs/cost-model.md) |
+| **Investment** | Running cost grows with how much advisors use the agent, not with the number of students. Keeping a small number of extra students enrolled covers the first year, before counting advisor time saved. [Costs and savings](docs/cost-model.md) |
 | **Path to value** | Take baselines → pilot with one advising team → run the agent test suite and move Calendly to OAuth → roll out to all advisors and track persistence → phase 2 Admissions Agent |
 
 ### Assumptions that would change this
@@ -238,7 +238,7 @@ Create the external credential and named credential, then set each advisor's eve
 │   └── data-graphs/Student_360_Graph.json, .md  Graph definition and notes
 ├── integrations/
 │   └── calendly.md
-├── tools/                                       cost_model.py (cost model), build_flows.py (generates the flows)
+├── tools/build_flows.py                         Generates the hybrid agent's flows
 ├── tests/                                       Testing Center suites (CSV upload, sf agent test YAML) and their generators
 ├── validation/
 │   ├── README.md                                Uncertainty, method, results for actions and four agent runs
@@ -247,7 +247,7 @@ Create the external credential and named credential, then set each advisor's eve
 └── docs/
     ├── execution-handoff.md                     One-pager for the build team
     ├── ai-usage.md                              What AI produced and how it was checked
-    ├── cost-model.md                            Run cost, build cost, break-even
+    ├── cost-model.md                            What drives cost, where the savings come from
     ├── operations.md                            Observability, release gates, runbook
     ├── demo-script.md                           Exact demo prompts and backup recording
     ├── changed-constraints.md                   What changes if a system or requirement changes
@@ -274,5 +274,5 @@ The build team's one-pager is [docs/execution-handoff.md](docs/execution-handoff
 - Record updates and multi-turn conversations aren't covered by the Testing Center runs (the update's confirmation step doesn't run there, and the CSV upload is single-turn). Check them in the agent panel.
 - The student search matches name words, not fuzzy spellings, so a misspelled name finds nothing.
 - Contact owner stands in for "assigned advisor".
-- Costs are list-price planning numbers with placeholder scale. See the [cost model](docs/cost-model.md).
+- Cost and savings are described qualitatively until the pilot measures real usage. See [costs and savings](docs/cost-model.md).
 - AI was used throughout. See [docs/ai-usage.md](docs/ai-usage.md) for what it got wrong and how each piece was verified.

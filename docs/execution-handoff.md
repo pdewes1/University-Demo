@@ -66,7 +66,7 @@ It is grounded in a Data 360 data graph over Banner and Canvas, which stay in Sn
 
 ## Unknowns
 
-- Real volume and cost. The [cost model](cost-model.md) estimates $31k a year to run for 40 advisors at list price; confirm scale, contracted rates and how Direct Access reads are billed.
+- Real volume and cost: advisor usage, contracted rates, existing entitlements, and how Direct Access reads are billed. See [costs and savings](cost-model.md).
 - Agent behaviour beyond the four Testing Center runs (195 cases, latest 19/20 on v8). Record updates and multi-turn conversations are still untested there. See [validation](../validation/README.md).
 - Slack link rendering and formatting for email drafts.
 

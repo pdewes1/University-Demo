@@ -16,7 +16,7 @@ How to tell, in production, that the Advisor Agent is working, safe and worth it
 | Engagement score | The calculated insight's last run | Not run since the last stream refresh | Data engineering |
 | Calendly | Error text from `CalendlyService` (HTTP status and message) | 401 (token expired or revoked), 403 (advisor not in the organization), 429 (rate limit) | Calendly admin |
 | Trust Layer | Einstein audit and feedback data in Data 360 | Toxicity flags on drafts; masked values appearing in output | Salesforce team |
-| Consumption | Setup › Digital Wallet: Flex Credits and Data 360 credits per week | Usage running ahead of the [cost model](cost-model.md) | Salesforce team, finance |
+| Consumption | Setup › Digital Wallet: Flex Credits and Data 360 credits per week | Usage rising faster than expected (see [costs and savings](cost-model.md)) | Salesforce team, finance |
 | Pilot measures | Prep time study; Task, Note and booking-link dates against the engagement-drop date | No movement after four weeks | Advising lead |
 
 ## Release gates
