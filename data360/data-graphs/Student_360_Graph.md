@@ -51,4 +51,6 @@ The column still exists in the Snowflake `CANVAS.PUBLIC.USERS` table; Data 360 j
 
 ## Financial aid: status only for advisors
 
-The graph still projects the Banner aid amounts, but `Student360DataAction` removes them before anything reaches the agent. An allow-list keeps only aid year, FAFSA status and received date, verification status, and satisfactory academic progress. Defense in depth for production: also drop the amount fields from the graph projection, so they're never copied into Data 360.
+The graph projects only aid status from Banner: aid year, FAFSA status and received date, verification status, satisfactory academic progress, plus the join keys. On 2026-10-26 the graph was deleted and recreated without cost of attendance, dependency status, Pell eligibility, the student aid index, and the offered, accepted, paid and unmet-need amounts, so those are never copied into Data 360.
+
+`Student360DataAction` still applies an allow-list as a second layer, and the test `financialAidIsReducedToStatusOnly` checks it. The amounts remain in the Banner table in Snowflake and on the data stream; drop them from the stream too if Data 360 shouldn't read them at all.

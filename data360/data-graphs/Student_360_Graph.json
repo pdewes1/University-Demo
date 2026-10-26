@@ -1,978 +1,922 @@
 {
- "input": {
-  "name": "Student_360_Graph",
-  "label": "Student 360 Graph",
-  "description": "Student profile with Canvas attendance, submissions, enrollment, page views, discussion entries, Banner financial aid summary and engagement score.",
-  "dataspaceName": "default",
-  "primaryObjectName": "UnifiedIndividual__dlm",
-  "type": "NONE",
-  "fullRefreshConfig": {
-   "schedule": {
-    "frequency": 1,
-    "timeGranularity": "Day"
-   }
-  },
-  "incrementalRefreshConfig": {
-   "enabled": false
-  },
-  "sourceObject": {
-   "name": "UnifiedIndividual__dlm",
-   "devName": "UnifiedIndividual__dlm",
-   "label": "Unified Individual",
-   "type": "derived",
-   "referenceDeveloperName": "UnifiedIndividual",
-   "path": [],
-   "recencyCriteria": [],
-   "fields": [
-    {
-     "sourceFieldName": "ssot__FirstName__c",
-     "dataType": "Text",
-     "isKeyColumn": false,
-     "isProjected": true,
-     "usageTag": "NONE"
-    },
-    {
-     "sourceFieldName": "ssot__LastName__c",
-     "dataType": "Text",
-     "isKeyColumn": false,
-     "isProjected": true,
-     "usageTag": "NONE"
-    },
-    {
-     "sourceFieldName": "ssot__PersonName__c",
-     "dataType": "Text",
-     "isKeyColumn": false,
-     "isProjected": true,
-     "usageTag": "NONE"
-    },
-    {
-     "sourceFieldName": "ssot__Pronoun__c",
-     "dataType": "Text",
-     "isKeyColumn": false,
-     "isProjected": true,
-     "usageTag": "NONE"
-    },
-    {
-     "sourceFieldName": "Student_ID__c",
-     "dataType": "Text",
-     "isKeyColumn": false,
-     "isProjected": true,
-     "usageTag": "NONE"
-    },
-    {
-     "sourceFieldName": "ssot__Id__c",
-     "dataType": "Text",
-     "isKeyColumn": true,
-     "isProjected": true,
-     "usageTag": "NONE"
-    }
-   ],
-   "relatedObjects": [
-    {
-     "name": "IndividualIdentityLink__dlm",
-     "devName": "IndividualIdentityLink__dlm",
-     "label": "Unified Link Individual",
-     "type": "bridge",
-     "referenceDeveloperName": "IndividualIdentityLink",
-     "path": [
-      {
-       "fieldName": "UnifiedRecordId__c",
-       "parentFieldName": "ssot__Id__c"
+  "input": {
+    "name": "Student_360_Graph",
+    "label": "Student 360 Graph",
+    "description": "Student profile with Canvas attendance, submissions, enrollment, page views, discussion entries, Banner financial aid status (no dollar amounts) and engagement score.",
+    "dataspaceName": "default",
+    "primaryObjectName": "UnifiedIndividual__dlm",
+    "type": "NONE",
+    "fullRefreshConfig": {
+      "schedule": {
+        "frequency": 1,
+        "timeGranularity": "Day"
       }
-     ],
-     "recencyCriteria": [],
-     "topKFilterCriteria": {
-      "limit": 100,
-      "orderCriteria": [
-       {
-        "fieldApiName": "SourceRecordId__c",
-        "sortOrder": "DESC"
-       }
+    },
+    "incrementalRefreshConfig": {
+      "enabled": false
+    },
+    "sourceObject": {
+      "name": "UnifiedIndividual__dlm",
+      "devName": "UnifiedIndividual__dlm",
+      "label": "Unified Individual",
+      "type": "derived",
+      "referenceDeveloperName": "UnifiedIndividual",
+      "path": [],
+      "recencyCriteria": [],
+      "fields": [
+        {
+          "sourceFieldName": "ssot__FirstName__c",
+          "dataType": "Text",
+          "isKeyColumn": false,
+          "isProjected": true,
+          "usageTag": "NONE"
+        },
+        {
+          "sourceFieldName": "ssot__LastName__c",
+          "dataType": "Text",
+          "isKeyColumn": false,
+          "isProjected": true,
+          "usageTag": "NONE"
+        },
+        {
+          "sourceFieldName": "ssot__PersonName__c",
+          "dataType": "Text",
+          "isKeyColumn": false,
+          "isProjected": true,
+          "usageTag": "NONE"
+        },
+        {
+          "sourceFieldName": "ssot__Pronoun__c",
+          "dataType": "Text",
+          "isKeyColumn": false,
+          "isProjected": true,
+          "usageTag": "NONE"
+        },
+        {
+          "sourceFieldName": "Student_ID__c",
+          "dataType": "Text",
+          "isKeyColumn": false,
+          "isProjected": true,
+          "usageTag": "NONE"
+        },
+        {
+          "sourceFieldName": "ssot__Id__c",
+          "dataType": "Text",
+          "isKeyColumn": true,
+          "isProjected": true,
+          "usageTag": "NONE"
+        }
+      ],
+      "relatedObjects": [
+        {
+          "name": "IndividualIdentityLink__dlm",
+          "devName": "IndividualIdentityLink__dlm",
+          "label": "Unified Link Individual",
+          "type": "bridge",
+          "referenceDeveloperName": "IndividualIdentityLink",
+          "path": [
+            {
+              "fieldName": "UnifiedRecordId__c",
+              "parentFieldName": "ssot__Id__c"
+            }
+          ],
+          "recencyCriteria": [],
+          "topKFilterCriteria": {
+            "limit": 100,
+            "orderCriteria": [
+              {
+                "fieldApiName": "SourceRecordId__c",
+                "sortOrder": "DESC"
+              }
+            ]
+          },
+          "fields": [
+            {
+              "sourceFieldName": "SourceRecordId__c",
+              "dataType": "Text",
+              "isKeyColumn": true,
+              "isProjected": true,
+              "keyQualifierName": "KQ_SourceRecordId__c",
+              "usageTag": "NONE"
+            },
+            {
+              "sourceFieldName": "KQ_SourceRecordId__c",
+              "dataType": "Text",
+              "isKeyColumn": false,
+              "isProjected": true,
+              "usageTag": "KEY_QUALIFIER"
+            },
+            {
+              "sourceFieldName": "UnifiedRecordId__c",
+              "dataType": "Text",
+              "isKeyColumn": false,
+              "isProjected": true,
+              "usageTag": "NONE"
+            },
+            {
+              "sourceFieldName": "ssot__DataSourceId__c",
+              "dataType": "Text",
+              "isKeyColumn": false,
+              "isProjected": true,
+              "usageTag": "NONE"
+            },
+            {
+              "sourceFieldName": "ssot__DataSourceObjectId__c",
+              "dataType": "Text",
+              "isKeyColumn": false,
+              "isProjected": true,
+              "usageTag": "NONE"
+            }
+          ],
+          "relatedObjects": [
+            {
+              "name": "ssot__Individual__dlm",
+              "devName": "ssot__Individual__dlm",
+              "label": "Individual",
+              "type": "standard",
+              "referenceDeveloperName": "Individual",
+              "path": [
+                {
+                  "fieldName": "ssot__Id__c",
+                  "parentFieldName": "SourceRecordId__c"
+                }
+              ],
+              "recencyCriteria": [],
+              "topKFilterCriteria": {
+                "limit": 100,
+                "orderCriteria": [
+                  {
+                    "fieldApiName": "ssot__Id__c",
+                    "sortOrder": "DESC"
+                  }
+                ]
+              },
+              "fields": [
+                {
+                  "sourceFieldName": "ssot__Id__c",
+                  "dataType": "Text",
+                  "isKeyColumn": true,
+                  "isProjected": true,
+                  "keyQualifierName": "KQ_Id__c",
+                  "usageTag": "NONE"
+                },
+                {
+                  "sourceFieldName": "KQ_Id__c",
+                  "dataType": "Text",
+                  "isKeyColumn": false,
+                  "isProjected": true,
+                  "usageTag": "KEY_QUALIFIER"
+                },
+                {
+                  "sourceFieldName": "Student_ID__c",
+                  "dataType": "Text",
+                  "isKeyColumn": false,
+                  "isProjected": true,
+                  "keyQualifierName": "KQ_Student_ID__c",
+                  "usageTag": "NONE"
+                }
+              ],
+              "relatedObjects": [
+                {
+                  "name": "Snowflake_Canvas_Users__dlm",
+                  "devName": "Snowflake_Canvas_Users__dlm",
+                  "label": "Canvas Users",
+                  "type": "custom",
+                  "path": [
+                    {
+                      "fieldName": "user_id__c",
+                      "parentFieldName": "ssot__Id__c"
+                    }
+                  ],
+                  "recencyCriteria": [],
+                  "topKFilterCriteria": {
+                    "limit": 100,
+                    "orderCriteria": [
+                      {
+                        "fieldApiName": "user_id__c",
+                        "sortOrder": "DESC"
+                      }
+                    ]
+                  },
+                  "fields": [
+                    {
+                      "sourceFieldName": "campus__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "class_year__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "email__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "enrollment_status__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "KQ_user_id__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "KEY_QUALIFIER"
+                    },
+                    {
+                      "sourceFieldName": "last_login__c",
+                      "dataType": "DateTime",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "major__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "status__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "student_id__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "user_id__c",
+                      "dataType": "Text",
+                      "isKeyColumn": true,
+                      "isProjected": true,
+                      "keyQualifierName": "KQ_user_id__c",
+                      "usageTag": "NONE"
+                    }
+                  ],
+                  "relatedObjects": [
+                    {
+                      "name": "Snowflake_Canvas_Enrollment__dlm",
+                      "devName": "Snowflake_Canvas_Enrollment__dlm",
+                      "label": "Canvas Enrollment",
+                      "type": "custom",
+                      "path": [
+                        {
+                          "fieldName": "user_id__c",
+                          "parentFieldName": "user_id__c"
+                        }
+                      ],
+                      "recencyCriteria": [],
+                      "topKFilterCriteria": {
+                        "limit": 100,
+                        "orderCriteria": [
+                          {
+                            "fieldApiName": "enrollment_id__c",
+                            "sortOrder": "DESC"
+                          }
+                        ]
+                      },
+                      "relatedObjects": [],
+                      "fields": [
+                        {
+                          "sourceFieldName": "course_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_course_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "current_score__c",
+                          "dataType": "Number",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "enrolled_at__c",
+                          "dataType": "DateTime",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "enrollment_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": true,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_enrollment_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "enrollment_state__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "final_grade__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "final_score__c",
+                          "dataType": "Number",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "grade_posted_at__c",
+                          "dataType": "DateTime",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "KQ_enrollment_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "KQ_user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": false,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "role__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "section_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "term_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_user_id__c",
+                          "usageTag": "NONE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Snowflake_Canvas_Discussion_Entries__dlm",
+                      "devName": "Snowflake_Canvas_Discussion_Entries__dlm",
+                      "label": "Canvas Discussion Entries",
+                      "type": "custom",
+                      "path": [
+                        {
+                          "fieldName": "user_id__c",
+                          "parentFieldName": "user_id__c"
+                        }
+                      ],
+                      "recencyCriteria": [
+                        {
+                          "fieldName": "posted_at__c",
+                          "value": 30,
+                          "valueType": "time",
+                          "valueUnit": "DAY"
+                        },
+                        {
+                          "fieldName": "posted_at__c",
+                          "value": 10,
+                          "valueType": "record",
+                          "valueUnit": "RECORD"
+                        }
+                      ],
+                      "relatedObjects": [],
+                      "fields": [
+                        {
+                          "sourceFieldName": "course_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_course_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "entry_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": true,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_entry_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "entry_type__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "KQ_entry_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "KQ_user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": false,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "likes__c",
+                          "dataType": "Number",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "posted_at__c",
+                          "dataType": "DateTime",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "topic__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_user_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "word_count__c",
+                          "dataType": "Number",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Snowflake_Canvas_Page_Views__dlm",
+                      "devName": "Snowflake_Canvas_Page_Views__dlm",
+                      "label": "Canvas Page Views",
+                      "type": "custom",
+                      "path": [
+                        {
+                          "fieldName": "user_id__c",
+                          "parentFieldName": "user_id__c"
+                        }
+                      ],
+                      "recencyCriteria": [
+                        {
+                          "fieldName": "event_at__c",
+                          "value": 30,
+                          "valueType": "time",
+                          "valueUnit": "DAY"
+                        },
+                        {
+                          "fieldName": "event_at__c",
+                          "value": 10,
+                          "valueType": "record",
+                          "valueUnit": "RECORD"
+                        }
+                      ],
+                      "relatedObjects": [],
+                      "fields": [
+                        {
+                          "sourceFieldName": "course_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_course_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "device__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "duration_seconds__c",
+                          "dataType": "Number",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "event_at__c",
+                          "dataType": "DateTime",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "event_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": true,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_event_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "event_type__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "KQ_event_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "KQ_user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": false,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_user_id__c",
+                          "usageTag": "NONE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Canvas_Submissions__dlm",
+                      "devName": "Canvas_Submissions__dlm",
+                      "label": "Canvas Submissions",
+                      "type": "custom",
+                      "path": [
+                        {
+                          "fieldName": "user_id__c",
+                          "parentFieldName": "user_id__c"
+                        }
+                      ],
+                      "recencyCriteria": [
+                        {
+                          "fieldName": "submitted_at__c",
+                          "value": 30,
+                          "valueType": "time",
+                          "valueUnit": "DAY"
+                        },
+                        {
+                          "fieldName": "submitted_at__c",
+                          "value": 10,
+                          "valueType": "record",
+                          "valueUnit": "RECORD"
+                        }
+                      ],
+                      "relatedObjects": [],
+                      "fields": [
+                        {
+                          "sourceFieldName": "assignment_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_assignment_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "course_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "graded_at__c",
+                          "dataType": "DateTime",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "KQ_submission_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "KQ_user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": false,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "points_possible__c",
+                          "dataType": "Number",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "score__c",
+                          "dataType": "Number",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "submission_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": true,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_submission_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "submitted_at__c",
+                          "dataType": "DateTime",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_user_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "workflow_state__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Snowflake_Canvas_Attendance__dlm",
+                      "devName": "Snowflake_Canvas_Attendance__dlm",
+                      "label": "Canvas Attendance",
+                      "type": "custom",
+                      "path": [
+                        {
+                          "fieldName": "user_id__c",
+                          "parentFieldName": "user_id__c"
+                        }
+                      ],
+                      "recencyCriteria": [],
+                      "topKFilterCriteria": {
+                        "limit": 100,
+                        "orderCriteria": [
+                          {
+                            "fieldApiName": "attendance_id__c",
+                            "sortOrder": "DESC"
+                          }
+                        ]
+                      },
+                      "relatedObjects": [],
+                      "fields": [
+                        {
+                          "sourceFieldName": "attendance_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": true,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_attendance_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "class_date__c",
+                          "dataType": "Date",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "course_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_course_id__c",
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "KQ_attendance_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "KQ_user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": false,
+                          "usageTag": "KEY_QUALIFIER"
+                        },
+                        {
+                          "sourceFieldName": "section_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "status__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "usageTag": "NONE"
+                        },
+                        {
+                          "sourceFieldName": "user_id__c",
+                          "dataType": "Text",
+                          "isKeyColumn": false,
+                          "isProjected": true,
+                          "keyQualifierName": "KQ_user_id__c",
+                          "usageTag": "NONE"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Snowflake_Banner_Financial_Aid_Summa__dlm",
+                  "devName": "Snowflake_Banner_Financial_Aid_Summa__dlm",
+                  "label": "Banner Financial Aid Summary",
+                  "type": "custom",
+                  "path": [
+                    {
+                      "fieldName": "banner_id__c",
+                      "parentFieldName": "ssot__Id__c"
+                    }
+                  ],
+                  "recencyCriteria": [],
+                  "topKFilterCriteria": {
+                    "limit": 100,
+                    "orderCriteria": [
+                      {
+                        "fieldApiName": "person_key__c",
+                        "sortOrder": "DESC"
+                      }
+                    ]
+                  },
+                  "relatedObjects": [],
+                  "fields": [
+                    {
+                      "sourceFieldName": "aid_year__c",
+                      "dataType": "Number",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "banner_id__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "keyQualifierName": "KQ_banner_id__c",
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "fafsa_received_date__c",
+                      "dataType": "Date",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "fafsa_status__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "KQ_banner_id__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": false,
+                      "usageTag": "KEY_QUALIFIER"
+                    },
+                    {
+                      "sourceFieldName": "KQ_person_key__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "KEY_QUALIFIER"
+                    },
+                    {
+                      "sourceFieldName": "person_key__c",
+                      "dataType": "Number",
+                      "isKeyColumn": true,
+                      "isProjected": true,
+                      "keyQualifierName": "KQ_person_key__c",
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "satisfactory_academic_progress__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    },
+                    {
+                      "sourceFieldName": "verification_status__c",
+                      "dataType": "Text",
+                      "isKeyColumn": false,
+                      "isProjected": true,
+                      "usageTag": "NONE"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Student_Engagement_Score__cio",
+          "devName": "Student_Engagement_Score__cio",
+          "label": "Student Engagement Score",
+          "type": "calculated",
+          "path": [
+            {
+              "fieldName": "unified_individual_id__c",
+              "parentFieldName": "ssot__Id__c"
+            }
+          ],
+          "recencyCriteria": [],
+          "relatedObjects": [],
+          "fields": [
+            {
+              "sourceFieldName": "engagement_score__c",
+              "dataType": "Number",
+              "ciFieldType": "MEASURE",
+              "isKeyColumn": false,
+              "isProjected": true,
+              "usageTag": "NONE"
+            },
+            {
+              "sourceFieldName": "unified_individual_id__c",
+              "dataType": "Text",
+              "ciFieldType": "DIMENSION",
+              "isKeyColumn": true,
+              "isProjected": true,
+              "usageTag": "NONE"
+            }
+          ]
+        }
       ]
-     },
-     "fields": [
-      {
-       "sourceFieldName": "SourceRecordId__c",
-       "dataType": "Text",
-       "isKeyColumn": true,
-       "isProjected": true,
-       "keyQualifierName": "KQ_SourceRecordId__c",
-       "usageTag": "NONE"
-      },
-      {
-       "sourceFieldName": "KQ_SourceRecordId__c",
-       "dataType": "Text",
-       "isKeyColumn": false,
-       "isProjected": true,
-       "usageTag": "KEY_QUALIFIER"
-      },
-      {
-       "sourceFieldName": "UnifiedRecordId__c",
-       "dataType": "Text",
-       "isKeyColumn": false,
-       "isProjected": true,
-       "usageTag": "NONE"
-      },
-      {
-       "sourceFieldName": "ssot__DataSourceId__c",
-       "dataType": "Text",
-       "isKeyColumn": false,
-       "isProjected": true,
-       "usageTag": "NONE"
-      },
-      {
-       "sourceFieldName": "ssot__DataSourceObjectId__c",
-       "dataType": "Text",
-       "isKeyColumn": false,
-       "isProjected": true,
-       "usageTag": "NONE"
-      }
-     ],
-     "relatedObjects": [
-      {
-       "name": "ssot__Individual__dlm",
-       "devName": "ssot__Individual__dlm",
-       "label": "Individual",
-       "type": "standard",
-       "referenceDeveloperName": "Individual",
-       "path": [
-        {
-         "fieldName": "ssot__Id__c",
-         "parentFieldName": "SourceRecordId__c"
-        }
-       ],
-       "recencyCriteria": [],
-       "topKFilterCriteria": {
-        "limit": 100,
-        "orderCriteria": [
-         {
-          "fieldApiName": "ssot__Id__c",
-          "sortOrder": "DESC"
-         }
-        ]
-       },
-       "fields": [
-        {
-         "sourceFieldName": "ssot__Id__c",
-         "dataType": "Text",
-         "isKeyColumn": true,
-         "isProjected": true,
-         "keyQualifierName": "KQ_Id__c",
-         "usageTag": "NONE"
-        },
-        {
-         "sourceFieldName": "KQ_Id__c",
-         "dataType": "Text",
-         "isKeyColumn": false,
-         "isProjected": true,
-         "usageTag": "KEY_QUALIFIER"
-        },
-        {
-         "sourceFieldName": "Student_ID__c",
-         "dataType": "Text",
-         "isKeyColumn": false,
-         "isProjected": true,
-         "keyQualifierName": "KQ_Student_ID__c",
-         "usageTag": "NONE"
-        }
-       ],
-       "relatedObjects": [
-        {
-         "name": "Snowflake_Canvas_Users__dlm",
-         "devName": "Snowflake_Canvas_Users__dlm",
-         "label": "Canvas Users",
-         "type": "custom",
-         "path": [
-          {
-           "fieldName": "user_id__c",
-           "parentFieldName": "ssot__Id__c"
-          }
-         ],
-         "recencyCriteria": [],
-         "topKFilterCriteria": {
-          "limit": 100,
-          "orderCriteria": [
-           {
-            "fieldApiName": "user_id__c",
-            "sortOrder": "DESC"
-           }
-          ]
-         },
-         "fields": [
-          {
-           "sourceFieldName": "campus__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "class_year__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "email__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "enrollment_status__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "KQ_user_id__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "KEY_QUALIFIER"
-          },
-          {
-           "sourceFieldName": "last_login__c",
-           "dataType": "DateTime",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "major__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "status__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "student_id__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "user_id__c",
-           "dataType": "Text",
-           "isKeyColumn": true,
-           "isProjected": true,
-           "keyQualifierName": "KQ_user_id__c",
-           "usageTag": "NONE"
-          }
-         ],
-         "relatedObjects": [
-          {
-           "name": "Snowflake_Canvas_Enrollment__dlm",
-           "devName": "Snowflake_Canvas_Enrollment__dlm",
-           "label": "Canvas Enrollment",
-           "type": "custom",
-           "path": [
-            {
-             "fieldName": "user_id__c",
-             "parentFieldName": "user_id__c"
-            }
-           ],
-           "recencyCriteria": [],
-           "topKFilterCriteria": {
-            "limit": 100,
-            "orderCriteria": [
-             {
-              "fieldApiName": "enrollment_id__c",
-              "sortOrder": "DESC"
-             }
-            ]
-           },
-           "relatedObjects": [],
-           "fields": [
-            {
-             "sourceFieldName": "course_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_course_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "current_score__c",
-             "dataType": "Number",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "enrolled_at__c",
-             "dataType": "DateTime",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "enrollment_id__c",
-             "dataType": "Text",
-             "isKeyColumn": true,
-             "isProjected": true,
-             "keyQualifierName": "KQ_enrollment_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "enrollment_state__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "final_grade__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "final_score__c",
-             "dataType": "Number",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "grade_posted_at__c",
-             "dataType": "DateTime",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "KQ_enrollment_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "KQ_user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": false,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "role__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "section_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "term_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_user_id__c",
-             "usageTag": "NONE"
-            }
-           ]
-          },
-          {
-           "name": "Snowflake_Canvas_Discussion_Entries__dlm",
-           "devName": "Snowflake_Canvas_Discussion_Entries__dlm",
-           "label": "Canvas Discussion Entries",
-           "type": "custom",
-           "path": [
-            {
-             "fieldName": "user_id__c",
-             "parentFieldName": "user_id__c"
-            }
-           ],
-           "recencyCriteria": [
-            {
-             "fieldName": "posted_at__c",
-             "value": 30,
-             "valueType": "time",
-             "valueUnit": "DAY"
-            },
-            {
-             "fieldName": "posted_at__c",
-             "value": 10,
-             "valueType": "record",
-             "valueUnit": "RECORD"
-            }
-           ],
-           "relatedObjects": [],
-           "fields": [
-            {
-             "sourceFieldName": "course_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_course_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "entry_id__c",
-             "dataType": "Text",
-             "isKeyColumn": true,
-             "isProjected": true,
-             "keyQualifierName": "KQ_entry_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "entry_type__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "KQ_entry_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "KQ_user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": false,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "likes__c",
-             "dataType": "Number",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "posted_at__c",
-             "dataType": "DateTime",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "topic__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_user_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "word_count__c",
-             "dataType": "Number",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            }
-           ]
-          },
-          {
-           "name": "Snowflake_Canvas_Page_Views__dlm",
-           "devName": "Snowflake_Canvas_Page_Views__dlm",
-           "label": "Canvas Page Views",
-           "type": "custom",
-           "path": [
-            {
-             "fieldName": "user_id__c",
-             "parentFieldName": "user_id__c"
-            }
-           ],
-           "recencyCriteria": [
-            {
-             "fieldName": "event_at__c",
-             "value": 30,
-             "valueType": "time",
-             "valueUnit": "DAY"
-            },
-            {
-             "fieldName": "event_at__c",
-             "value": 10,
-             "valueType": "record",
-             "valueUnit": "RECORD"
-            }
-           ],
-           "relatedObjects": [],
-           "fields": [
-            {
-             "sourceFieldName": "course_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_course_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "device__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "duration_seconds__c",
-             "dataType": "Number",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "event_at__c",
-             "dataType": "DateTime",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "event_id__c",
-             "dataType": "Text",
-             "isKeyColumn": true,
-             "isProjected": true,
-             "keyQualifierName": "KQ_event_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "event_type__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "KQ_event_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "KQ_user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": false,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_user_id__c",
-             "usageTag": "NONE"
-            }
-           ]
-          },
-          {
-           "name": "Canvas_Submissions__dlm",
-           "devName": "Canvas_Submissions__dlm",
-           "label": "Canvas Submissions",
-           "type": "custom",
-           "path": [
-            {
-             "fieldName": "user_id__c",
-             "parentFieldName": "user_id__c"
-            }
-           ],
-           "recencyCriteria": [
-            {
-             "fieldName": "submitted_at__c",
-             "value": 30,
-             "valueType": "time",
-             "valueUnit": "DAY"
-            },
-            {
-             "fieldName": "submitted_at__c",
-             "value": 10,
-             "valueType": "record",
-             "valueUnit": "RECORD"
-            }
-           ],
-           "relatedObjects": [],
-           "fields": [
-            {
-             "sourceFieldName": "assignment_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_assignment_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "course_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "graded_at__c",
-             "dataType": "DateTime",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "KQ_submission_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "KQ_user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": false,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "points_possible__c",
-             "dataType": "Number",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "score__c",
-             "dataType": "Number",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "submission_id__c",
-             "dataType": "Text",
-             "isKeyColumn": true,
-             "isProjected": true,
-             "keyQualifierName": "KQ_submission_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "submitted_at__c",
-             "dataType": "DateTime",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_user_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "workflow_state__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            }
-           ]
-          },
-          {
-           "name": "Snowflake_Canvas_Attendance__dlm",
-           "devName": "Snowflake_Canvas_Attendance__dlm",
-           "label": "Canvas Attendance",
-           "type": "custom",
-           "path": [
-            {
-             "fieldName": "user_id__c",
-             "parentFieldName": "user_id__c"
-            }
-           ],
-           "recencyCriteria": [],
-           "topKFilterCriteria": {
-            "limit": 100,
-            "orderCriteria": [
-             {
-              "fieldApiName": "attendance_id__c",
-              "sortOrder": "DESC"
-             }
-            ]
-           },
-           "relatedObjects": [],
-           "fields": [
-            {
-             "sourceFieldName": "attendance_id__c",
-             "dataType": "Text",
-             "isKeyColumn": true,
-             "isProjected": true,
-             "keyQualifierName": "KQ_attendance_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "class_date__c",
-             "dataType": "Date",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "course_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_course_id__c",
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "KQ_attendance_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "KQ_user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": false,
-             "usageTag": "KEY_QUALIFIER"
-            },
-            {
-             "sourceFieldName": "section_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "status__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "usageTag": "NONE"
-            },
-            {
-             "sourceFieldName": "user_id__c",
-             "dataType": "Text",
-             "isKeyColumn": false,
-             "isProjected": true,
-             "keyQualifierName": "KQ_user_id__c",
-             "usageTag": "NONE"
-            }
-           ]
-          }
-         ]
-        },
-        {
-         "name": "Snowflake_Banner_Financial_Aid_Summa__dlm",
-         "devName": "Snowflake_Banner_Financial_Aid_Summa__dlm",
-         "label": "Banner Financial Aid Summary",
-         "type": "custom",
-         "path": [
-          {
-           "fieldName": "banner_id__c",
-           "parentFieldName": "ssot__Id__c"
-          }
-         ],
-         "recencyCriteria": [],
-         "topKFilterCriteria": {
-          "limit": 100,
-          "orderCriteria": [
-           {
-            "fieldApiName": "person_key__c",
-            "sortOrder": "DESC"
-           }
-          ]
-         },
-         "relatedObjects": [],
-         "fields": [
-          {
-           "sourceFieldName": "aid_year__c",
-           "dataType": "Number",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "banner_id__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "keyQualifierName": "KQ_banner_id__c",
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "cost_of_attendance__c",
-           "dataType": "Number",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "dependency_status__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "fafsa_received_date__c",
-           "dataType": "Date",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "fafsa_status__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "KQ_banner_id__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": false,
-           "usageTag": "KEY_QUALIFIER"
-          },
-          {
-           "sourceFieldName": "KQ_person_key__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "KEY_QUALIFIER"
-          },
-          {
-           "sourceFieldName": "pell_eligible__c",
-           "dataType": "Boolean",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "person_key__c",
-           "dataType": "Number",
-           "isKeyColumn": true,
-           "isProjected": true,
-           "keyQualifierName": "KQ_person_key__c",
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "satisfactory_academic_progress__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "student_aid_index__c",
-           "dataType": "Number",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "total_accepted__c",
-           "dataType": "Number",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "total_offered__c",
-           "dataType": "Number",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "total_paid__c",
-           "dataType": "Number",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "unmet_need__c",
-           "dataType": "Number",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          },
-          {
-           "sourceFieldName": "verification_status__c",
-           "dataType": "Text",
-           "isKeyColumn": false,
-           "isProjected": true,
-           "usageTag": "NONE"
-          }
-         ]
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "name": "Student_Engagement_Score__cio",
-     "devName": "Student_Engagement_Score__cio",
-     "label": "Student Engagement Score",
-     "type": "calculated",
-     "path": [
-      {
-       "fieldName": "unified_individual_id__c",
-       "parentFieldName": "ssot__Id__c"
-      }
-     ],
-     "recencyCriteria": [],
-     "relatedObjects": [],
-     "fields": [
-      {
-       "sourceFieldName": "engagement_score__c",
-       "dataType": "Number",
-       "ciFieldType": "MEASURE",
-       "isKeyColumn": false,
-       "isProjected": true,
-       "usageTag": "NONE"
-      },
-      {
-       "sourceFieldName": "unified_individual_id__c",
-       "dataType": "Text",
-       "ciFieldType": "DIMENSION",
-       "isKeyColumn": true,
-       "isProjected": true,
-       "usageTag": "NONE"
-      }
-     ]
     }
-   ]
   }
- }
 }
