@@ -1,6 +1,6 @@
 # Post University Student Success Agents
 
-[About me](#about-me) · [About Post University](#about-post-university) · [The goal](#the-goal) · [The challenges](#the-challenges) · [Outcomes](#outcomes-were-driving-and-measuring) · [The recommendation](#the-recommendation) · [Assumptions](#assumptions) · [Advisor Agent](#advisor-agent) · [Architecture](#architecture) · [Trust boundaries](#trust-boundaries) · [Data 360](#data-360) · [Technical specifics](#technical-specifics)
+[About me](#about-me) · [About Post University](#about-post-university) · [The goal](#the-goal) · [The challenges](#the-challenges) · [Outcomes](#outcomes-were-driving-and-measuring) · [The recommendation](#the-recommendation) · [Assumptions](#assumptions) · [Advisor Agent](#advisor-agent) · [Architecture](#architecture) · [Trust boundaries](#trust-boundaries) · [Data 360](#data-360) · [Validation](#focused-technical-validation) · [Setup](#setup) · [Technical specifics](#technical-specifics)
 
 ## About me
 
@@ -168,13 +168,27 @@ Illustrative, based on a real 360 summary for a synthetic student:
 
 [Streams, ruleset, score and graph in detail](docs/technical-details.md#data-360)
 
-### Tested before trusted
+## Focused technical validation
 
-- **Action-level checks** proved Data 360 alone would show any student, so access is enforced in the actions.
+**The question:** when the agent grounds on Data 360, does it see only the advisor's own students?
+
+**The answer:** no. Data 360 returns any student to a direct query, so the advising relationship is enforced in the agent's actions instead.
+
+- **13 action-level checks:** own student allowed, another advisor's student refused before anything happens, protected fields rejected, aid amounts never reach the agent.
 - **Agent test suites** (90+ cases per agent) cover grounding, other advisors' students, aid amounts, prompt injection and off-topic requests. Each run found something, and each fix is written up.
 - **Apex and Flow tests** cover every refusal path.
 
-[Validation write-up and raw results](validation/README.md)
+[Method, results and raw outputs](validation/README.md)
+
+## Setup
+
+1. **Data:** load Banner and Canvas into Snowflake, create a read-only integration user with key-pair auth, and load students into the CRM.
+2. **Data 360:** connect Snowflake, create the streams, then the identity ruleset, the engagement score and the data graph.
+3. **Salesforce:** `sf project deploy start --source-dir force-app --target-org <alias>`
+4. **Calendly:** create the named credential and paste the token in Setup, never in code.
+5. **Agent:** paste the Agent Script into a new employee agent, publish, activate, and assign the permission sets.
+
+[Full setup steps](docs/technical-details.md#setup)
 
 ## Technical specifics
 
@@ -185,8 +199,8 @@ The full depth lives in [**Technical details**](docs/technical-details.md). Star
 | Actions, the code behind each, and the Agent Script | [Actions and implementation](docs/technical-details.md#actions-and-implementation) · [Why each action is Flow or Apex](docs/flow-vs-apex.md) |
 | What stays where, nightly load, trust boundaries | [Architecture details](docs/technical-details.md#architecture-details) |
 | Data streams, identity resolution, engagement score, data graph | [Data 360](docs/technical-details.md#data-360) |
-| How it was tested, and what the tests changed | [Validation summary](docs/technical-details.md#focused-technical-validation) · [Full write-up and raw results](validation/README.md) |
-| Building it in your own org | [Setup](docs/technical-details.md#setup) · [Repository structure](docs/technical-details.md#repository-structure) |
+| How it was tested, and what the tests changed | [Validation in detail](docs/technical-details.md#focused-technical-validation) · [Full write-up and raw results](validation/README.md) |
+| Building it in your own org | [Full setup](docs/technical-details.md#setup) · [Repository structure](docs/technical-details.md#repository-structure) |
 | Running it | [Operations](docs/operations.md) · [Demo script](docs/demo-script.md) |
-| Handing it to a build team | [Execution handoff](docs/execution-handoff.md) · [What changes if a constraint changes](docs/changed-constraints.md) |
+| Handing it to a build team | [Execution handoff](docs/technical-details.md#execution-handoff) · [Build team one-pager](docs/execution-handoff.md) · [What changes if a constraint changes](docs/changed-constraints.md) |
 | Cost, limits and AI use | [Costs and savings](docs/cost-model.md) · [Limitations](docs/technical-details.md#limitations) · [How AI was used](docs/ai-usage.md) |
