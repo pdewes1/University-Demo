@@ -9,6 +9,8 @@
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>
     </actionOverrides>
+    <!-- Highlights panel on the student record: Student ID, program, stage, modality, graduation term, contact preference. -->
+    <compactLayoutAssignment>Student_Compact</compactLayoutAssignment>
     <!-- Students are visible only to their owner (the assigned advisor). Admins with View All Data still see all. -->
     <externalSharingModel>Private</externalSharingModel>
     <sharingModel>Private</sharingModel>

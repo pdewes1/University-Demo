@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Military_Affiliated__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Active duty, veteran, or military spouse or dependent. Self-reported at admission.</description>
+    <label>Military Affiliated</label>
+    <trackHistory>false</trackHistory>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Expected_Graduation_Term__c</fullName>
+    <description>Term the student is expected to finish, for example Spring 2028. Sourced from Banner degree audit.</description>
+    <label>Expected Graduation</label>
+    <length>20</length>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

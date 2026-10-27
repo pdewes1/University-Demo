@@ -63,7 +63,26 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 | [`student360Card`](../force-app/main/default/lwc/student360Card) | Lightning web component: engagement gauge, what-to-watch flags, courses, six metric tiles, financial aid status. |
 | [`Student360CardController`](../force-app/main/default/classes/Student360CardController.cls) | Apex controller. Reads the `Student_360_Graph` data graph by the student's unified profile, the same way the agent's Get Student 360 Data action does, and reads advising contact and overdue follow-ups live from the CRM. |
 | [`Contact Layout`](../force-app/main/default/layouts/Contact-Contact%20Layout.layout-meta.xml) | Feeds the *Related* tab. The Data 360 lists and Notes & Attachments were moved off it to the page, so nothing shows twice. |
-| [`Contact.object-meta.xml`](../force-app/main/default/objects/Contact/Contact.object-meta.xml) | Makes the page the org-default desktop View page for Contact when deployed with `sf project deploy`. |
+| [`Contact.object-meta.xml`](../force-app/main/default/objects/Contact/Contact.object-meta.xml) | Makes the page the org-default desktop View page for Contact when deployed with `sf project deploy`, and assigns the `Student_Compact` compact layout to the highlights panel. |
+| [Student profile fields](../force-app/main/default/objects/Contact/fields) | Program, modality, enrollment intensity, start and expected graduation terms, preferred name and contact method, first-generation, military-affiliated and transfer flags, employer. |
+
+**Student profile fields.** The Details tab is grouped the way an advisor reads a student: *Student Information*, *Program and Enrollment*, *Contact Information*, *Work*, then the description. The highlights panel shows Student ID, program, stage, modality, expected graduation, preferred contact method and mobile number.
+
+| Field | Source in production | Advisors can edit |
+|---|---|---|
+| Program, Modality, Enrollment Intensity, Start Term, Expected Graduation, Transfer Student | Banner | No (read-only) |
+| First Generation, Military Affiliated | Admissions, self-reported | No (read-only) |
+| Preferred Name, Preferred Contact Method, Employer | The student, through their advisor | Yes |
+
+Field access is set on the System Administrator and Academic Advisor profiles in the demo org. Profiles aren't in this repo, so set the same field-level security after deploying elsewhere. GPA and credits earned are deliberately not on the record: the agent is tested to say those aren't available rather than guess.
+
+**Demo data.** [`StudentProfileSeeder`](../force-app/main/default/classes/StudentProfileSeeder.cls) fills those fields for every student, plus a mobile number, job title, languages and a one-line description. Values come from each student's Student ID, so a rerun gives the same result. The mix is mostly online and part-time, with working adults, first-generation, military-affiliated and transfer students, to match the [assumptions](../README.md#assumptions) about Post's students. Priya Cooper and Aisha Allen get fixed profiles that fit the demo script. It only fills blank fields unless told to overwrite, and it never changes Student ID, owner, stage or level that are already set. Run it as an invocable action:
+
+```sh
+POST /services/data/v67.0/actions/custom/apex/StudentProfileSeeder   {"inputs":[{"overwrite":false}]}
+```
+
+Tests: [`StudentProfileSeederTests`](../force-app/main/default/classes/StudentProfileSeederTests.cls), 2 tests, all passing, 97% coverage.
 
 **The Data 360 tab.** The six lists are Dynamic Related List – Single components, newest first unless noted. Submissions, page views and discussion posts are **engagement** data. A Data 360 related list on engagement data shows only the last 7 days unless it has a filter, so each of those three has a "date is not blank" filter (`submitted_at__c|NOT_EQUAL|` and so on) to show the full history. Attendance, enrollment and aid aren't engagement data and need no filter.
 
@@ -216,7 +235,10 @@ This deploys:
 - the `User.Calendly_Event_Type_URI__c` field;
 - the Calendly Trusted URL;
 - the two permission sets;
-- the Student Record Page, the `student360Card` component and its controller, the Contact layout with Data 360 related-list columns, and the Contact page override that makes the page the default.
+- the Student Record Page, the `student360Card` component and its controller, the Contact layout with Data 360 related-list columns, and the Contact page override that makes the page the default;
+- the student profile fields on Contact and the `Student_Compact` compact layout.
+
+Then set field-level security for the profile fields (see [Student record page](#student-record-page)) and, for demo data, run `StudentProfileSeeder`.
 
 ### 4. Calendly
 
@@ -246,12 +268,12 @@ Create the external credential and named credential, then set each advisor's eve
 │   ├── Academic_Advisor_Hybrid.agent            Agent Script, Flow + Apex build (live version 3)
 │   └── Academic_Advisor_Standard.agent          Agent Script, standard-actions build (live version 1)
 ├── force-app/main/default/
-│   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check, tests
+│   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check, demo-data seeder, tests
 │   ├── flows/                                   Access-check, task and record-update flows for the hybrid agent
 │   ├── lwc/student360Card/                      Student 360 card for the student record page
 │   ├── flexipages/                              Student Record Page
 │   ├── layouts/                                 Contact layout with Data 360 related-list columns
-│   ├── objects/                                 Calendly_Event_Type_URI__c on User; Contact page override, Private sharing, validation rule
+│   ├── objects/                                 Calendly_Event_Type_URI__c on User; Contact profile fields, compact layout, page override, Private sharing, validation rule
 │   ├── cspTrustedSites/                         Calendly trusted URL
 │   └── permissionsets/                          Agent access, Calendly access
 ├── data360/
