@@ -355,69 +355,6 @@
         <relatedList>RelatedHistoryList</relatedList>
     </relatedLists>
     <relatedLists>
-        <relatedList>RelatedNoteList</relatedList>
-    </relatedLists>
-    <relatedLists>
-        <fields>course_id__c</fields>
-        <fields>term_id__c</fields>
-        <fields>enrollment_state__c</fields>
-        <fields>current_score__c</fields>
-        <fields>final_grade__c</fields>
-        <relatedList>Snowflake_Canvas_Enrollment__dlm.Contact__c</relatedList>
-        <sortField>course_id__c</sortField>
-        <sortOrder>Asc</sortOrder>
-    </relatedLists>
-    <relatedLists>
-        <fields>class_date__c</fields>
-        <fields>course_id__c</fields>
-        <fields>section_id__c</fields>
-        <fields>status__c</fields>
-        <relatedList>Snowflake_Canvas_Attendance__dlm.Contact__c</relatedList>
-        <sortField>class_date__c</sortField>
-        <sortOrder>Desc</sortOrder>
-    </relatedLists>
-    <relatedLists>
-        <fields>submitted_at__c</fields>
-        <fields>course_id__c</fields>
-        <fields>assignment_id__c</fields>
-        <fields>workflow_state__c</fields>
-        <fields>score__c</fields>
-        <fields>points_possible__c</fields>
-        <relatedList>Canvas_Submissions__dlm.Contact__c</relatedList>
-        <sortField>submitted_at__c</sortField>
-        <sortOrder>Desc</sortOrder>
-    </relatedLists>
-    <relatedLists>
-        <fields>event_at__c</fields>
-        <fields>course_id__c</fields>
-        <fields>event_type__c</fields>
-        <fields>duration_seconds__c</fields>
-        <fields>device__c</fields>
-        <relatedList>Snowflake_Canvas_Page_Views__dlm.Contact__c</relatedList>
-        <sortField>event_at__c</sortField>
-        <sortOrder>Desc</sortOrder>
-    </relatedLists>
-    <relatedLists>
-        <fields>posted_at__c</fields>
-        <fields>course_id__c</fields>
-        <fields>topic__c</fields>
-        <fields>entry_type__c</fields>
-        <fields>word_count__c</fields>
-        <relatedList>Snowflake_Canvas_Discussion_Entries__dlm.Contact__c</relatedList>
-        <sortField>posted_at__c</sortField>
-        <sortOrder>Desc</sortOrder>
-    </relatedLists>
-    <relatedLists>
-        <fields>aid_year__c</fields>
-        <fields>fafsa_status__c</fields>
-        <fields>fafsa_received_date__c</fields>
-        <fields>verification_status__c</fields>
-        <fields>satisfactory_academic_progress__c</fields>
-        <relatedList>Snowflake_Banner_Financial_Aid_Summa__dlm.Contact__c</relatedList>
-        <sortField>aid_year__c</sortField>
-        <sortOrder>Desc</sortOrder>
-    </relatedLists>
-    <relatedLists>
         <fields>ACTIVITY.SUBJECT</fields>
         <fields>EMAIL_STATUS.CREATED_DATE</fields>
         <fields>EMAIL_STATUS.FIRST_OPEN_DATE</fields>
