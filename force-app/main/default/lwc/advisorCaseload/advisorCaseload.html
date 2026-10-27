@@ -1,0 +1,109 @@
+<template>
+    <article class="card">
+        <header class="head">
+            <div class="head-title">
+                <lightning-icon icon-name="standard:education" size="small" alternative-text="Caseload"></lightning-icon>
+                <div>
+                    <h2>My Caseload</h2>
+                    <p>Who to reach this week · Canvas and Banner from Data 360, follow-ups from the CRM</p>
+                </div>
+            </div>
+            <div class="head-actions">
+                <template lwc:if={c.asOf}><span class="asof">As of {c.asOf}</span></template>
+                <lightning-button-icon icon-name="utility:refresh" variant="bare-inverse" alternative-text="Refresh"
+                    title="Refresh" onclick={handleRefresh} disabled={refreshing}></lightning-button-icon>
+            </div>
+        </header>
+
+        <template lwc:if={loading}>
+            <div class="state"><lightning-spinner size="small" alternative-text="Loading your caseload"></lightning-spinner></div>
+        </template>
+        <template lwc:elseif={error}>
+            <div class="state state-msg">{error}</div>
+        </template>
+        <template lwc:else>
+            <template lwc:if={notice}>
+                <div class="notice">{notice}</div>
+            </template>
+
+            <template lwc:if={hasStudents}>
+                <section class="tiles">
+                    <template for:each={tiles} for:item="t">
+                        <div key={t.key} class={t.cls}>
+                            <div class="tile-label">
+                                <lightning-icon icon-name={t.icon} size="xx-small"></lightning-icon>
+                                {t.label}
+                            </div>
+                            <div class="tile-value">{t.value}</div>
+                            <div class="tile-detail">{t.detail}</div>
+                        </div>
+                    </template>
+                </section>
+
+                <nav class="pills" aria-label="Filter students">
+                    <template for:each={filters} for:item="f">
+                        <button key={f.value} class={f.cls} data-value={f.value} aria-pressed={f.pressed}
+                            onclick={handleFilter}>{f.text}</button>
+                    </template>
+                </nav>
+
+                <template lwc:if={hasRows}>
+                    <ul class="list">
+                        <template for:each={rows} for:item="r">
+                            <li key={r.id} class="row">
+                                <div class="who">
+                                    <span class={r.avatarCls} aria-hidden="true">{r.initials}</span>
+                                    <div class="who-text">
+                                        <a href="#" class="name" data-id={r.id} onclick={handleOpen}>{r.name}</a>
+                                        <div class="subline">{r.subline}</div>
+                                        <span class={r.statusCls}>{r.statusText}</span>
+                                    </div>
+                                </div>
+
+                                <div class="engagement" title="Engagement score from Data 360">
+                                    <span class={r.scoreCls}>{r.scoreText}</span>
+                                    <span class="score-label">{r.bandText}</span>
+                                </div>
+
+                                <div class="metrics">
+                                    <div class="metric"><span class="metric-label">Attendance</span><span class="metric-value">{r.attendanceText}</span></div>
+                                    <div class="metric"><span class="metric-label">Canvas login</span><span class="metric-value">{r.loginText}</span></div>
+                                    <div class="metric"><span class="metric-label">Last contact</span><span class="metric-value">{r.contactText}</span></div>
+                                    <div class="metric"><span class="metric-label">Follow-ups</span><span class={r.followCls}>{r.followText}</span></div>
+                                    <div class="metric"><span class="metric-label">Aid status</span><span class={r.aidCls}>{r.aidText}</span></div>
+                                </div>
+
+                                <div class="flags">
+                                    <template lwc:if={r.hasFlags}>
+                                        <template for:each={r.flags} for:item="f">
+                                            <span key={f.key} class="flag">{f.label}</span>
+                                        </template>
+                                        <template lwc:if={r.extraFlags}><span class="flag flag_more">{r.extraFlags}</span></template>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="all-clear">
+                                            <lightning-icon icon-name="utility:success" size="xx-small"></lightning-icon>
+                                            Nothing to act on
+                                        </span>
+                                    </template>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                    <template lwc:if={showMore}>
+                        <div class="more"><lightning-button variant="base" label={moreLabel} onclick={handleMore}></lightning-button></div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <div class="state state-msg">No students in this view.</div>
+                </template>
+                <template lwc:if={truncatedNote}><div class="notice">{truncatedNote}</div></template>
+            </template>
+
+            <footer class="foot">
+                Only students assigned to you appear here. Engagement, attendance, coursework and aid status (status only, never amounts)
+                come from Data 360; follow-ups and last contact come live from the CRM. Ask the Advisor Agent to brief you on any student.
+            </footer>
+        </template>
+    </article>
+</template>
