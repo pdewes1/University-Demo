@@ -173,7 +173,7 @@ The same Data 360 view is on the student's record page, so an advisor gets the p
 
 ### Trust boundaries
 
-- **Own students only.** Every action checks that the advisor owns the student before touching Data 360, the model or Calendly. Search never returns anyone else's students.
+- **Own students only.** Every action checks that the advisor owns the student before touching Data 360, the model or Calendly. Search never returns anyone else's students. In the org, Contact sharing is Private, so advisors can't open other advisors' students either.
 - **Advisor in the loop.** Emails are drafts. Record updates need the advisor's confirmation and only touch allowed fields.
 - **Financial aid is status only.** Award amounts aren't in the data the agent can see.
 - **No invented links or facts.** Booking links are created by code, not the model. If something isn't in the data, the agent says so.

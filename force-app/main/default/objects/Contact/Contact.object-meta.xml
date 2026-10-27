@@ -9,4 +9,7 @@
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>
     </actionOverrides>
+    <!-- Students are visible only to their owner (the assigned advisor). Admins with View All Data still see all. -->
+    <externalSharingModel>Private</externalSharingModel>
+    <sharingModel>Private</sharingModel>
 </CustomObject>

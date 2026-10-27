@@ -90,7 +90,7 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 
 The engagement bands are *On track* (75 and up), *Watch* (50 to 74) and *At risk* (below 50). These follow the signals the agent is told to call out. Tune the thresholds once real terms of data exist.
 
-**Access.** The card shows data only if the running user can see the Contact (`WITH USER_MODE`), the same rule as the Data 360 related lists on the page. Unlike the agent, it doesn't also require the viewer to own the student. In production, set Contact sharing to Private with advisor-based sharing, so advisors see only their own students' records, and therefore their Data 360 data.
+**Access.** The card shows data only if the running user can see the Contact (`WITH USER_MODE`), the same rule as the Data 360 related lists on the page. Contact sharing is **Private**, so an advisor sees only the students they own, and only those students' Data 360 data. Checked with `UserRecordAccess` in the demo org: Advisor Jacqueline has no access to Priya Cooper and full access to her own two students. There are no sharing rules or manual shares on Contact. System administrators (View All Data) still see every student. That's by design, so demo the privacy as an advisor user, not as the admin.
 
 **Tests.** [`Student360CardControllerTests`](../force-app/main/default/classes/Student360CardControllerTests.cls): 6 tests, all passing, 84% coverage. They cover graph parsing, the flags and bands, CRM activity, and the no-profile and no-access paths. [Results](../validation/results/2026-10-26-student360card-tests.json)
 
