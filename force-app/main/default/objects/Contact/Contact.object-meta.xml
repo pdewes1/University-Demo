@@ -12,4 +12,13 @@
     <!-- Students are visible only to their owner (the assigned advisor). Admins with View All Data still see all. -->
     <externalSharingModel>Private</externalSharingModel>
     <sharingModel>Private</sharingModel>
+    <!-- The standard Update Record action can write any field the advisor can edit, so this keeps the
+         Banner Student ID and the advisor assignment out of reach for the Academic Advisor profile. -->
+    <validationRules>
+        <fullName>Advisors_Keep_Student_ID_and_Owner</fullName>
+        <active>true</active>
+        <description>Advisors (and the Advisor Agent acting as them) can't change a student's Student ID or reassign the student. Student ID comes from Banner and advisor assignment comes from the nightly load.</description>
+        <errorConditionFormula>AND($Profile.Name = "Academic Advisor", OR(ISCHANGED(OwnerId), ISCHANGED(Student_ID__c)))</errorConditionFormula>
+        <errorMessage>Student ID and the assigned advisor can't be changed here. They come from Banner and the advisor assignment process.</errorMessage>
+    </validationRules>
 </CustomObject>

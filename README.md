@@ -125,7 +125,7 @@ The Advisor Agent is an Agentforce **employee agent**. Advisors use it in the Ag
 
 On a student's record it uses that student without asking. Anywhere else, it asks which student you mean or searches for them.
 
-**Two builds of the same agent.** `Academic_Advisor_Student_Success` runs every action in Apex. `Academic_Advisor_Hybrid` moves the access check, tasks and record updates into Flow and keeps the rest in Apex. Both are live and are checked against the same test suite. [Why each action is Flow or Apex](docs/flow-vs-apex.md)
+**Three builds of the same agent.** `Academic_Advisor_Standard` uses standard Agentforce actions to find and update students, with Salesforce sharing doing the owner check, and custom code only where nothing standard exists (Data 360, the email draft, Calendly, notes). `Academic_Advisor_Hybrid` moves the access check, tasks and record updates into Flow. `Academic_Advisor_Student_Success` runs every action in Apex. All three are live and are checked against the same test suite. [Why each action is standard, Flow or Apex](docs/flow-vs-apex.md)
 
 ### A typical conversation
 

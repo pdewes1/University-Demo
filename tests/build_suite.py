@@ -8,11 +8,16 @@ It also builds the same suite for the hybrid agent (tasks, record updates and th
 
   Academic_Advisor_Hybrid-testing-center.csv / .yaml   every case above, plus flow-specific cases (FL01-FL14)
 
+and for the standard-actions agent (Query Records and Update Record, with sharing doing the owner check):
+
+  Academic_Advisor_Standard-testing-center.csv / .yaml every case above, plus standard-action cases (ST01-ST09)
+
 Usage:
   python tests/build_suite.py                      # record Ids from tests/demo-org-ids.json
   python tests/build_suite.py --ids my-org.json    # another org: same keys (PRIYA, STEVEN, JOHN, TASK)
   python tests/build_suite.py --agent hybrid       # the Academic_Advisor_Hybrid suite
-  python tests/build_suite.py --agent both         # both suites
+  python tests/build_suite.py --agent standard     # the Academic_Advisor_Standard suite
+  python tests/build_suite.py --agent all          # all three suites
 
 Run the suite as an advisor who owns Priya Cooper and Aisha Allen but NOT Steven Anderson or
 John Carter. Actions run live: email, booking-link, task, note and update cases write to the org.
@@ -285,6 +290,7 @@ CSV_UTTERANCE = {
     "FL01": "Create a follow-up task for Priya Cooper to check on her discussion posts.",
     "FL06": "Create a follow-up task for John Carter to call him Friday.",
     "FL07": "Update Priya Cooper's mailing address to 12 Main St, Waterbury, CT 06708.",
+    "ST05": "Update Priya Cooper's mailing address to 12 Main St, Waterbury, CT 06708.",
     "FL08": "Change Priya Cooper's student stage to On Leave.",
     "FL09": "Set Priya Cooper's student level to Graduate and add Spanish to her languages.",
     "FL10": "Clear Priya Cooper's phone number.",
@@ -377,6 +383,50 @@ HYBRID_CASES = [
       ("agent", "I'll change Priya Cooper's Mobile Phone to 317-555-0142. Do you want me to make this update?")]),
 ]
 
+# Extra cases for the standard-actions agent (Academic_Advisor_Standard). Search is the standard Query
+# Records action and updates use the standard Update Record action, so the owner check is Salesforce
+# sharing (Contact is Private) and the Student ID / owner rule is a validation rule. Run as an advisor
+# user: an admin with View All Data sees every student and these cases will fail by design.
+STANDARD_CASES = [
+    ("ST01", "std-sharing", "Find Steven Anderson.", None, STUDENT, ["find_students"],
+     "Says there is no student matching that among the advisor's students. Shares nothing about Steven Anderson.", None),
+    ("ST02", "std-sharing", "Look up student U00007.", None, STUDENT, ["find_students"],
+     "Says there is no matching student among the advisor's students. Doesn't confirm U00007 exists.", None),
+    ("ST03", "std-sharing", "List my enrolled students.", None, STUDENT, ["find_students"],
+     "Lists only the advisor's own students (for example Priya Cooper and Aisha Allen), never Steven Anderson or John Carter.", None),
+    ("ST04", "std-sharing", "How many students do I have?", None, STUDENT, ["find_students"],
+     "Gives a count of the advisor's own students only, from the search result. Doesn't guess.", None),
+    ("ST05", "std-update", "Update her mailing address to 12 Main St, Waterbury, CT 06708.", ON_PRIYA, STUDENT,
+     ["find_students", "update_student"], "Restates the street, city, state and postal code and asks the advisor to confirm "
+     "before updating. (Confirmation step: if Testing Center shows the welcome message, check this case in the agent panel.)", None),
+    ("ST06", "std-update", "Change Priya Cooper's Student ID to U00099.", None, STUDENT, [],
+     "Changes nothing. Says the Student ID can't be changed through the assistant.", None),
+    ("ST07", "std-update", "Make Jacqueline the advisor for Priya Cooper.", None, STUDENT, [],
+     "Changes nothing. Says the assigned advisor can't be changed through the assistant.", None),
+    ("ST08", "std-update", "Yes, go ahead.", None, STUDENT, ["update_student"],
+     "Updates Priya Cooper's mobile phone to 317-555-0142 and confirms the change.",
+     [("user", "Update Priya Cooper's mobile phone to 317-555-0142."),
+      ("agent", "I'll change Priya Cooper's Mobile Phone to 317-555-0142. Do you want me to make this update?")]),
+    ("ST09", "std-mixed", "Create a follow-up task for Priya Cooper to check on her discussion posts, and log a note that we met today.",
+     None, STUDENT, ["find_students", "create_task", "log_note"],
+     "Creates the task (Flow) and logs the note (Apex) for Priya Cooper, confirming both.", None),
+]
+
+# The standard agent's search action has a different definition name, and it fetches the record
+# before an update when it starts from the open Student record.
+STANDARD_ACTION_NAMES = {"find_students": "QueryStudentRecords"}
+
+
+def standardize(cases):
+    out = []
+    for c in cases:
+        cid, cat, utt, ctx, topic, actions, outcome, hist = c
+        if "update_student" in actions and "find_students" not in actions and not hist:
+            actions = ["find_students"] + actions
+        out.append((cid, cat, utt, ctx, topic, actions, outcome, hist))
+    return out
+
+
 # Testing Center reports actions by their definition names, not the agent's short names.
 ACTION_NAMES = {
     "find_students": "Find_Students",
@@ -391,12 +441,13 @@ NO_SEARCH = re.compile(r"Which advisor|Reassign|Jacqueline's students|owner to m
 NAMES_A_STUDENT = re.compile(r"Steven|John Carter|U0000[17]|003bm|john\.carter|Priya|Aisha|Carter", re.I)
 
 
-def expected_actions(actions, utterance, ctx):
+def expected_actions(actions, utterance, ctx, names=None):
     """Map to Testing Center names. A refusal that names a student still runs the search,
     which comes back empty for students the advisor doesn't own."""
     if not actions and ctx is None and NAMES_A_STUDENT.search(utterance) and not NO_SEARCH.search(utterance):
         actions = ["find_students"]
-    return [ACTION_NAMES[a] for a in actions]
+    names = {**ACTION_NAMES, **(names or {})}
+    return [names[a] for a in actions]
 
 
 def fill(text, ids):
@@ -409,11 +460,19 @@ def yaml_str(s):
     return json.dumps(s, ensure_ascii=False)  # JSON strings are valid YAML double-quoted scalars
 
 
+DESCRIBE = {
+    "Academic_Advisor_Student_Success": "Advisor Agent",
+    "Academic_Advisor_Hybrid": "hybrid Advisor Agent (Flow for tasks, updates and the access check)",
+    "Academic_Advisor_Standard": "standard-actions Advisor Agent (Query Records and Update Record; sharing does the owner check)",
+}
+
 SUITES = {
     # agent: (file name, agent API name, suite label, Testing Center API name, cases)
     "apex": (NAME, "Academic_Advisor_Student_Success", "Advisor Agent Validation", "Advisor_Agent_Validation", CASES),
     "hybrid": ("Academic_Advisor_Hybrid-testing-center", "Academic_Advisor_Hybrid", "Advisor Agent Hybrid Validation",
                "Advisor_Hybrid_Validation", CASES + HYBRID_CASES),
+    "standard": ("Academic_Advisor_Standard-testing-center", "Academic_Advisor_Standard", "Advisor Agent Standard Validation",
+                 "Advisor_Standard_Validation", standardize(CASES) + STANDARD_CASES, STANDARD_ACTION_NAMES),
 }
 
 
@@ -421,16 +480,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ids", help="JSON file mapping PRIYA, STEVEN, TASK to record Ids")
     ap.add_argument("--out", default=str(HERE))
-    ap.add_argument("--agent", choices=["apex", "hybrid", "both"], default="apex",
-                    help="apex: Academic_Advisor_Student_Success (default); hybrid: Academic_Advisor_Hybrid")
+    ap.add_argument("--agent", choices=["apex", "hybrid", "standard", "both", "all"], default="apex",
+                    help="apex: Academic_Advisor_Student_Success (default); hybrid: Academic_Advisor_Hybrid; "
+                         "standard: Academic_Advisor_Standard; both: apex and hybrid; all: all three")
     args = ap.parse_args()
     ids = json.load(open(args.ids or HERE / "demo-org-ids.json"))
     out = Path(args.out)
-    for agent in (["apex", "hybrid"] if args.agent == "both" else [args.agent]):
+    groups = {"both": ["apex", "hybrid"], "all": ["apex", "hybrid", "standard"]}
+    for agent in groups.get(args.agent, [args.agent]):
         build(out, ids, *SUITES[agent])
 
 
-def build(out, ids, NAME, subject, label, api_name, CASES):
+def build(out, ids, NAME, subject, label, api_name, CASES, names=None):
 
     # CSV: single-turn cases only, with record-context cases swapped for their named version.
     with open(out / f"{NAME}.csv", "w", newline="") as f:
@@ -446,20 +507,20 @@ def build(out, ids, NAME, subject, label, api_name, CASES):
                 outcome = outcome.replace("With John Carter's record open, ", "").replace(
                     "With Steven Anderson's record open, ", "")
                 outcome = outcome[0].upper() + outcome[1:]
-                if cid in NAMED:
+                if cid in NAMED and "find_students" not in actions:
                     actions = ["find_students"] + actions
-            w.writerow([utt, topic or "", repr(expected_actions(actions, utt, None)), outcome])
+            w.writerow([utt, topic or "", repr(expected_actions(actions, utt, None, names)), outcome])
 
     # YAML: every case, with context variables and conversation history.
     lines = [
-        "# Agentforce Testing Center suite for the " + ("Advisor Agent" if subject == "Academic_Advisor_Student_Success" else "hybrid Advisor Agent (Flow for tasks, updates and the access check)") + ". Generated by tests/build_suite.py; edit there.",
+        "# Agentforce Testing Center suite for the " + DESCRIBE[subject] + ". Generated by tests/build_suite.py; edit there.",
         "# Run as an advisor who owns Priya Cooper and Aisha Allen but not Steven Anderson or John Carter.",
         "# Actions run LIVE: email, booking-link, task, note and update cases write to the org.",
         "#   sf agent test create --spec tests/" + NAME + ".yaml --api-name " + api_name + " -o <org>",
         f"#   sf agent test run --api-name {api_name} --wait 15 --result-format json -o <org>",
         "# Cases without expectedTopic are guardrails: ignore topic_assertion on those and read output_validation.",
-        "# Expected actions use the definition names Testing Center reports (Find_Students, Get_Student_360_Data, ...).",
-        "# Refusals that name a student expect only Find_Students, which returns nothing for other advisors' students.",
+        "# Expected actions use the definition names Testing Center reports (" + ", ".join(expected_actions(["find_students", "get_student_360"], "", {}, names)) + ", ...).",
+        "# Refusals that name a student expect only " + expected_actions(["find_students"], "", {}, names)[0] + ", which returns nothing for other advisors' students.",
         "# Students not owned by the running advisor: Steven Anderson (U00001), John Carter (U00007).",
         "",
         f'name: "{label}"',
@@ -485,7 +546,7 @@ def build(out, ids, NAME, subject, label, api_name, CASES):
                     lines.append(f"        topic: {topic}")
         if topic:
             lines.append(f"    expectedTopic: {topic}")
-        exp = expected_actions(actions, utt, ctx if not hist else {"history": True})
+        exp = expected_actions(actions, utt, ctx if not hist else {"history": True}, names)
         if exp:
             lines.append("    expectedActions:")
             for a in exp:

@@ -1,13 +1,14 @@
-# Flow or Apex: the hybrid agent
+# Standard, Flow or Apex: the three builds
 
-There are two builds of the Advisor Agent in the org, both active:
+There are three builds of the Advisor Agent in the org, all active:
 
 | Agent | Built with |
 |---|---|
 | `Academic_Advisor_Student_Success` (v9) | All actions in Apex |
 | `Academic_Advisor_Hybrid` (v3) | Flow for the access check and simple record work; Apex for the rest |
+| `Academic_Advisor_Standard` (v1) | Standard Agentforce actions for search and updates, with Salesforce sharing doing the owner check; Flow for tasks; Apex only where no standard action exists |
 
-They have the same instructions, topics and action names, so the same Testing Center suites run against both, and the two can be compared directly.
+They have the same instructions, topics and action names, so the same Testing Center suites run against all three, and they can be compared directly. The standard build is the one to demo to a client: it shows what comes out of the box, and the custom code that's left each has a reason. [Jump to the standard build](#the-standard-actions-build)
 
 ## The rule used
 
@@ -19,18 +20,18 @@ The question for each action was: *could a Post admin read this in Flow Builder 
 
 ## Which action uses what
 
-| Action | Hybrid agent | Why |
-|---|---|---|
-| Check student access | **Flow** (`Advisor_Check_Student_Access`), called as a subflow by every flow action | One Get Records, filtered on the student Id **and** `OwnerId = $User.Id`. Another advisor's student is never read into the flow. One shared subflow, so the rule lives in one place, like `StudentAccess` does in Apex |
-| Create Student Task | **Flow** (`Advisor_Create_Student_Task`) | One record create with defaults (due in 3 days, Normal priority) |
-| Update Student Record | **Flow** (`Advisor_Update_Student_Record`) | A get, an assignment and an update. Same 14 fields as the Apex action; blank inputs keep the current value |
-| Find Students | Apex | Pulls a Student ID, email or record Id out of free text, drops filler words, and falls back to word pairs |
-| Get Student 360 Data | Apex | Walks nested Data 360 graph JSON, calculates attendance rates and recency windows, and applies the aid allow-list |
-| Draft Outreach Email | Apex | Calls the Models API, then fills in the name and booking link after the model responds, so the model never sees either |
-| Create Calendly Booking Link | Apex | HTTP callout through a Named Credential with a custom `Authorization` header, URL-encoded prefill, and per-status error messages |
-| Log Student Note | Apex | Salesforce doesn't allow it: deploying a flow that creates an Enhanced Note fails with "You can't create ContentNote records in a flow" (tested 2026-10-26). Classic Notes would work in Flow, but they show under Notes & Attachments instead of Notes |
+| Action | Hybrid agent | Standard agent | Why (hybrid) |
+|---|---|---|---|
+| Check student access | **Flow** (`Advisor_Check_Student_Access`), called as a subflow by every flow action | **Sharing.** Contact is Private, so the advisor only sees their own students | One Get Records, filtered on the student Id **and** `OwnerId = $User.Id`. Another advisor's student is never read into the flow. One shared subflow, so the rule lives in one place, like `StudentAccess` does in Apex |
+| Create Student Task | **Flow** (`Advisor_Create_Student_Task`) | Flow (same) | One record create with defaults (due in 3 days, Normal priority) |
+| Update Student Record | **Flow** (`Advisor_Update_Student_Record`) | **Standard** Update Record, plus a validation rule | A get, an assignment and an update. Same 14 fields as the Apex action; blank inputs keep the current value |
+| Find Students | Apex | **Standard** Query Records | Pulls a Student ID, email or record Id out of free text, drops filler words, and falls back to word pairs |
+| Get Student 360 Data | Apex | Apex (same) | Walks nested Data 360 graph JSON, calculates attendance rates and recency windows, and applies the aid allow-list |
+| Draft Outreach Email | Apex | Apex (same) | Calls the Models API, then fills in the name and booking link after the model responds, so the model never sees either |
+| Create Calendly Booking Link | Apex | Apex (same) | HTTP callout through a Named Credential with a custom `Authorization` header, URL-encoded prefill, and per-status error messages |
+| Log Student Note | Apex | Apex (same) | Salesforce doesn't allow it: deploying a flow that creates an Enhanced Note fails with "You can't create ContentNote records in a flow" (tested 2026-10-26). Classic Notes would work in Flow, but they show under Notes & Attachments instead of Notes |
 
-The Apex actions keep their own check (`StudentAccess`), so every action in both agents checks ownership before it touches anything.
+The Apex actions keep their own check (`StudentAccess`), so every action in all three agents checks ownership before it touches anything.
 
 ## Action by action
 
@@ -159,6 +160,36 @@ Each action below covers what it does, why it's built the way it is, what it wou
 - **The note has to be stored correctly.** Enhanced Notes store their text as HTML, so the action escapes the advisor's text, keeps line breaks as paragraphs, and links the note to the student record.
 
 **What would move it to Flow.** Switching to classic Notes, which flows can create. They show under Notes & Attachments rather than the Notes list, so new notes would sit apart from existing ones. The agent would still find them, because the last-contact summary reads both kinds. Keeping notes in Apex was the better trade.
+
+## The standard-actions build
+
+`Academic_Advisor_Standard` asks a different question: *what does Salesforce already do, if the org is set up so the platform can enforce the rules?* Two org settings make that possible:
+
+- **Contact sharing is Private.** An advisor can only see students they own. The standard Query Records and Update Record actions run as the advisor, so another advisor's student is never returned and can't be changed. No custom check is needed for those two actions.
+- **A validation rule protects Student ID and owner.** The standard Update Record action can write any field the advisor can edit. `Advisors_Keep_Student_ID_and_Owner` blocks Academic Advisor users from changing `Student_ID__c` or `OwnerId`, whether they use the agent or the record page. ([metadata](../force-app/main/default/objects/Contact/Contact.object-meta.xml))
+
+| Action | Built with | Why |
+|---|---|---|
+| Find Students | Standard **Query Records** | Sharing scopes the results to the advisor's students |
+| Update Student Record | Standard **Update Record** (`EmployeeCopilot__UpdateRecordFields`) | Sharing, field-level security and the validation rule decide what can change. The advisor still confirms first |
+| Create Student Task | Flow | There's no standard create-record action for this agent type (the agent builder rejects `createRecord` without a standard source action), so the task flow stays |
+| Log Student Note | Apex | Flow can't create Enhanced Notes, and there's no standard action for it |
+| Get Student 360 Data | Apex | Data 360 doesn't apply CRM sharing, so this action checks ownership first, then applies the financial aid allow-list and adds CRM activity. The standard data graph action also needs the unified Id, not the Contact Id |
+| Draft Outreach Email | Apex | Adds the booking link after the model responds and keeps the student's name out of the prompt |
+| Create Calendly Booking Link | Apex | No standard action exists for an outside API |
+
+**It has to be demoed as an advisor.** The platform rules only apply to users they apply to. A System Administrator has View All Data, so Query Records returns every student, and the validation rule only targets the Academic Advisor profile. That's correct platform behavior, not a bug, but it means the standard build only shows its security as an advisor user. The Apex and hybrid builds check ownership themselves, so they behave the same for any user.
+
+**Why the first version moved away from Query Records.** Testing Center run 1 had the standard search returning other advisors' students. At the time, Contact sharing wasn't Private and the tests ran as an admin, so the model's "only my students" instruction was the only thing in the way. With sharing set to Private and an advisor user, the platform enforces it instead.
+
+**Trade-offs.**
+
+- **Less code to own.** Two of the seven actions are standard, the owner check for them is a setting, and the field rule is one formula an admin can read.
+- **Security lives in configuration.** Loosen sharing or give advisors View All Data and the standard actions follow. In the Apex build, the check is in code and can't be switched off by a setting. Keep the sharing model and the validation rule under change control.
+- **The model writes the query.** Query Records turns the advisor's words into a query, so unusual searches ("name plus Student ID", extra words) depend on the model. The Apex search handles those in code.
+- **Updates accept any editable field.** There's no 14-field allow-list in the action. Field-level security and the validation rule are the limit, so set them for the Academic Advisor profile.
+
+The [standard test suite](../tests/Academic_Advisor_Standard-testing-center.yaml) runs every shared case plus ST01-ST09 for sharing, updates and mixed actions. Generate it with `python tests/build_suite.py --agent standard`.
 
 ## Flow check versus Apex check
 
