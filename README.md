@@ -4,7 +4,7 @@
 
 ## About me
 
-Hi There! My name is Paul Dewes, and I've worked in the Salesforce ecosystem since 2019.
+Hi there! My name is Paul Dewes, and I've worked in the Salesforce ecosystem since 2019.
 
 **Salesforce Support.** I started at Salesforce on the Marketing Cloud Engagement Support team and moved up quickly to Swarm Lead, supporting a group of Support Engineers better work with our customers. There I worked on Marketing Cloud Engagement and Data 360 when it first launched.
 
