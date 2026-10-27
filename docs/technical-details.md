@@ -1,10 +1,10 @@
 # Technical details
 
-The deeper material behind the [README](../README.md): the decision in full, the agent and its actions, architecture and trust boundaries, Data 360, validation, setup, repository layout, the execution handoff and limitations.
+The deeper material behind the [README](../README.md): the decision in full, the code behind each action, what stays where and the trust boundaries, Data 360, validation, setup, repository layout, the execution handoff and limitations.
 
 - [Decision summary](#decision-summary)
-- [Advisor Agent](#advisor-agent)
-- [Architecture](#architecture)
+- [Actions and implementation](#actions-and-implementation)
+- [Architecture details](#architecture-details)
 - [Data 360](#data-360)
 - [Focused technical validation](#focused-technical-validation)
 - [Setup](#setup)
@@ -29,9 +29,9 @@ The deeper material behind the [README](../README.md): the decision in full, the
 - **The engagement score flags the right students.** Before rollout, compare who it flags with who actually withdrew last term.
 - **Bookings can be measured.** The demo creates booking links but doesn't record whether a meeting was booked. The pilot needs Calendly's booking events written back to the CRM, which is planned for phase 2.
 
-## Advisor Agent
+## Actions and implementation
 
-`Academic_Advisor_Student_Success` is an Agentforce **employee agent**, live in the Agentforce panel on student records and Home, and in Slack. It never talks to students, and nothing it writes is sent without the advisor.
+The [README](../README.md#advisor-agent) describes what the agent does. This is the code behind each action in the all-Apex build, `Academic_Advisor_Student_Success`.
 
 | Action | What it does | Implementation |
 |---|---|---|
@@ -50,21 +50,9 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 - **On a student record**, it uses that student without asking.
 - **Anywhere else** (Home, another object, Slack), it asks which student you mean or searches for them. It never treats a non-student record Id as a student.
 
-### A typical conversation
+## Architecture details
 
-Illustrative, based on a real 360 summary for a synthetic student:
-
-> **Advisor (on Priya's record):** What should I know about this student?
->
-> **Agent:** She's doing strong work when she submits (94% on graded work), but she missed a recent HIST 210 class, hasn't posted in discussions, and her LMS activity has dropped since mid-September. Her engagement score is 71.6. Financial aid is complete and SAP is met.
->
-> **Advisor:** Draft her a check-in email.
->
-> **Agent:** *(draft with a single-use booking link)* Want me to log a note and set a follow-up task?
-
-## Architecture
-
-![Architecture](images/architecture-detailed.png)
+The diagram is in the [README](../README.md#architecture).
 
 ### What stays where
 
