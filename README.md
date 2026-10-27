@@ -1,6 +1,6 @@
 # Post University Student Success Agents
 
-[About me](#about-me) · [About Post University](#about-post-university) · [The challenge](#the-challenge) · [The project](#the-project) · [Outcomes](#outcomes-and-how-well-know) · [Architecture](#architecture) · [Setup](#setup)
+[About me](#about-me) · [About Post University](#about-post-university) · [The goal](#the-goal) · [The challenges](#the-challenges) · [Outcomes](#outcomes-were-driving-and-measuring) · [The recommendation](#the-recommendation) · [Assumptions](#assumptions) · [Technical specifics](#technical-specifics)
 
 ## About me
 
@@ -37,104 +37,65 @@ Hi There! My name is Paul Dewes, and I've worked in the Salesforce ecosystem sin
 
 ## About Post University
 
-Post University has been educating students in Waterbury, Connecticut, since 1890. Today most of its students learn online. Many are working adults, military-affiliated students, career changers and people coming back to finish a degree, fitting school around jobs, families and service. The university's focus is a degree that works with their lives, not against them.
+Post University has been educating students in Waterbury, Connecticut, since 1890. Today, most Post University students learn online. Many of them are working adults, military-affiliated, career changers, or returning to finish a degree.
 
-That mix of students is also what makes keeping them enrolled hard. When work, family or service gets busy, school is often the first thing to slip, and a student can drift away quietly without anyone noticing in time. Too many students don't come back for the next term, fewer finish than should, and help tends to arrive after a student has already made up their mind.
+Post University knows that school is often the first thing to slip when work, family or service make demands on a student's time. For many students, a missed class becomes a missed assignment, and missed assignments can quickly snowball into course withdrawals, failing grades or leaving altogether.
 
-## The challenge
-
-**Post University wants more of its students to stay enrolled and graduate.** Advisors are the main way the university can step in when a student starts to drift, but they find out late. The early signs are spread across three systems:
-
-- missed classes, late submissions and a drop in logins, in Canvas;
-- a FAFSA that hasn't been verified for a new year or semester, in Banner;
-- no advising contact in weeks, an overdue follow-up, or a change in status such as going on leave, in the CRM.
-
-To see the whole picture, an advisor has to open all three and piece it together by hand, for each student. With a large caseload, that prep work crowds out outreach. By the time an advisor reaches out, the student has often been struggling silently for quite some time.
-
-## The project
-
-This project designs and validates an **Advisor Agent** in Agentforce. It shortens the time from "a student starts struggling" to "their advisor reaches out with a way to book a meeting to help," and it removes the prep work that stands in the way. The agent pulls one trusted view of a student from Data 360 (built from Banner, Canvas and the CRM), tells the advisor what needs attention, and turns that into action: an outreach email with a booking link, a follow-up task and a note. It only ever works on the advisor's own students.
+Post University's promise is an education that works with students' lives, not against them. Leadership is now asking: *how can we step in and help students sooner, before it's too late?*
 
 > **Demo scenario.** This is a design and validation exercise. It is not affiliated with or endorsed by the university, and all student data is synthetic. No real student data is used.
 
+## The goal
+
+- **More students stay enrolled and graduate.**
+- **Staff have reliable tools** to understand and engage their students.
+- **Staff give timely, relevant guidance**, reaching out while it can still make a difference.
+
+## The challenges
+
+- **Advisors work across siloed systems.** The early warning signs are spread across Canvas (missed classes, late work, fewer logins), Banner (financial aid paperwork) and the CRM (no recent contact, overdue follow-ups). Seeing the whole picture means opening all three and piecing it together by hand.
+- **Each advisor covers more students.** Budget pressure has raised caseloads, so that prep work crowds out the outreach itself.
+- **The data is messy and duplicated.** The same student appears several times across systems, which makes finding the right student and the right record harder.
+
+## Outcomes we're driving and measuring
+
+| Outcome | How we'll know |
+|---|---|
+| Advisors spend their time on students, not on gathering data | **Prep time per student** goes down |
+| At-risk students hear from their advisor sooner | **Days from an engagement drop to outreach** go down |
+| Outreach turns into conversations | **Share of flagged students who book a meeting** goes up |
+| Fewer students leave; more graduate | Term-to-term persistence, attrition and graduation rate, tracked over terms |
+| Faster isn't careless | Advisor edits per draft, access refusals, and zero financial aid amounts exposed |
+
+The first three move within weeks, so they decide the pilot. Persistence and graduation take terms, so they decide the rollout.
+
+## The recommendation
+
+Give every advisor an **Advisor Agent** in Agentforce, grounded in one trusted view of each student from **Data 360**.
+
+The agent brings Banner, Canvas and the CRM together for one student, tells the advisor the two or three things that need attention, and turns that into action: a supportive outreach email with a single-use booking link, a follow-up task and a note. It works only on the advisor's own students, and nothing goes to a student without the advisor reviewing it. Banner and Canvas stay where they are, read from Snowflake with zero copy.
+
 ![Overview](docs/images/architecture-overview.png)
-
-## Outcomes and how we'll know
-
-| Level | Outcome | Measure | Source |
-|---|---|---|---|
-| **University goal** | Fewer students leave; more graduate | Term-to-term persistence · attrition rate · graduation rate | Banner, institutional research |
-| **Advising goal** | Advisors spend their time on students, not on gathering data | **Advisor prep time per student** | Time study before the pilot, then agent session timing |
-| | At-risk students hear from their advisor sooner | **Days from an engagement drop to outreach** | The date the Data 360 engagement score falls below threshold, to the date of the outreach task, note or email |
-| | Outreach turns into conversations | **Share of flagged students who book a meeting** | Single-use Calendly links created, matched to bookings |
-| **Guardrail** | Faster isn't careless | Advisor edits per draft · access refusals · zero financial aid amounts exposed | Agent logs, Testing Center suite |
-
-The three advising measures move within weeks, so they're what the pilot is judged on. Persistence and graduation take terms to show up, so they're tracked for the rollout decision, not for the pilot.
-
-### What changes for an advisor
 
 | Today | With the Advisor Agent |
 |---|---|
-| Opens three systems to prepare for one student | Asks "What should I know about this student?" and gets one summary from Data 360 |
-| Notices disengagement when a grade drops or the student goes quiet | Sees attendance, LMS activity, engagement and the last advising contact together, with the two or three things to act on |
-| Writes each check-in email from scratch, then sends a generic booking page | Reviews a specific, supportive draft with a single-use Calendly link for that student |
-| Follow-ups live in memory or a notebook | A follow-up task and a note are logged on the student record in the same conversation |
+| Opens three systems to prepare for one student | Asks "What should I know about this student?" and gets one summary |
+| Notices disengagement when a grade drops or the student goes quiet | Sees attendance, LMS activity, engagement and the last contact together, with what to act on |
+| Writes each check-in email from scratch | Reviews a specific, supportive draft with a booking link for that student |
+| Follow-ups live in memory or a notebook | A task and a note are logged on the student record in the same conversation |
 
-## The decision
+**How it gets there:** take baselines → pilot with one advising team → roll out to all advisors and track persistence → phase 2, an Admissions Agent. Running cost grows with how much advisors use the agent, not with the number of students, and keeping a small number of extra students enrolled covers the first year. [Costs and savings](docs/cost-model.md)
 
-| | |
-|---|---|
-| **Problem** | Advisors spot disengaged students late, because the signals sit in three systems. That costs prep time, delays outreach, and loses students who could have been kept. |
-| **Owner** | Provost's office (advising). The VP of Enrollment owns the phase 2 Admissions Agent. |
-| **Recommendation** | Build an Agentforce agent for advisors, grounded in a Data 360 data graph over Banner and Canvas. The Banner and Canvas streams stay in Snowflake (zero copy); the graph keeps a daily copy of only the fields the agent needs. Keep each system of record where it is. Check in the agent's actions that the student belongs to the advisor. |
-| **Success for the pilot** | Compared with baselines taken before launch: lower prep time per student, fewer days from an engagement drop to outreach, and a higher share of flagged students booking a meeting, with no guardrail breaches. |
-| **Investment** | Running cost grows with how much advisors use the agent, not with the number of students. Keeping a small number of extra students enrolled covers the first year, before counting advisor time saved. [Costs and savings](docs/cost-model.md) |
-| **Path to value** | Take baselines → pilot with one advising team → run the agent test suite and move Calendly to OAuth → roll out to all advisors and track persistence → phase 2 Admissions Agent |
-
-### Assumptions that would change this
+## Assumptions
 
 - **Outreach timing matters for retention.** If faster outreach doesn't raise bookings, the agent saves advisors time but doesn't move persistence. The pilot tests this directly.
 - **The engagement score flags the right students.** Before rollout, compare who it flags with who actually withdrew last term.
-- **Bookings can be measured.** The demo creates booking links but doesn't record whether a meeting was booked. The pilot needs Calendly's booking events written back to the CRM, which is planned for phase 2.
+- **Bookings can be measured.** The pilot needs Calendly booking events written back to the CRM.
+- **The CRM knows each student's advisor.** A nightly load from Banner keeps students and their assigned advisor (the Contact owner) current in Education Cloud.
 
-## Advisor Agent
+## Technical specifics
 
-`Academic_Advisor_Student_Success` is an Agentforce **employee agent**, live in the Agentforce panel on student records and Home, and in Slack. It never talks to students, and nothing it writes is sent without the advisor.
-
-| Action | What it does | Implementation |
-|---|---|---|
-| Find Students | Searches the advisor's own students by name, Student ID, email or record Id | [`FindStudentsAction`](force-app/main/default/classes/FindStudentsAction.cls): owner filter in the SOQL, so other advisors' students never reach the agent |
-| Get Student 360 Data | Last advising contact and overdue follow-ups (live from the CRM), plus attendance, submissions, enrollments and scores, LMS activity, discussion posts, financial aid status (no amounts) and engagement score | [`Student360DataAction`](force-app/main/default/classes/Student360DataAction.cls) → data graph, with [`StudentAdvisingActivity`](force-app/main/default/classes/StudentAdvisingActivity.cls) for CRM activity |
-| Draft Student Outreach Email | A warm, specific check-in email based on the 360 summary, with a single-use Calendly link | [`DraftStudentEmailAction`](force-app/main/default/classes/DraftStudentEmailAction.cls) → Models API + Calendly |
-| Create Calendly Booking Link | Just the link, pre-filled with the student's name and email | [`CreateCalendlyBookingLinkAction`](force-app/main/default/classes/CreateCalendlyBookingLinkAction.cls) |
-| Create Student Task | Follow-up task for the advisor, linked to the student | [`CreateStudentTaskAction`](force-app/main/default/classes/CreateStudentTaskAction.cls) |
-| Log Student Note | Advising note on the student record | [`LogStudentNoteAction`](force-app/main/default/classes/LogStudentNoteAction.cls) |
-| Update Student Record | Allow-listed fields only, after the advisor confirms | [`UpdateStudentRecordAction`](force-app/main/default/classes/UpdateStudentRecordAction.cls) |
-
-The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.agent`](agent/Academic_Advisor_Student_Success.agent).
-
-**A second build, Flow plus Apex.** `Academic_Advisor_Hybrid` is the same agent with the access check and simple record work moved into Flow: [Create Student Task](force-app/main/default/flows/Advisor_Create_Student_Task.flow-meta.xml) and [Update Student Record](force-app/main/default/flows/Advisor_Update_Student_Record.flow-meta.xml) (same 14 fields). Both call one shared check flow first, [Check Student Access](force-app/main/default/flows/Advisor_Check_Student_Access.flow-meta.xml), which only reads the student if the running advisor owns them. The search, Data 360, Calendly, email and notes stay in Apex. Both agents are active. [Why each action is where it is](docs/flow-vs-apex.md) · [How to test it against the original](validation/README.md#running-the-hybrid-suite-and-comparing-it-with-the-original-agent)
-
-- **On a student record**, it uses that student without asking.
-- **Anywhere else** (Home, another object, Slack), it asks which student you mean or searches for them. It never treats a non-student record Id as a student.
-
-### A typical conversation
-
-Illustrative, based on a real 360 summary for a synthetic student:
-
-> **Advisor (on Priya's record):** What should I know about this student?
->
-> **Agent:** She's doing strong work when she submits (94% on graded work), but she missed a recent HIST 210 class, hasn't posted in discussions, and her LMS activity has dropped since mid-September. Her engagement score is 71.6. Financial aid is complete and SAP is met.
->
-> **Advisor:** Draft her a check-in email.
->
-> **Agent:** *(draft with a single-use booking link)* Want me to log a note and set a follow-up task?
-
-## Architecture
-
-![Architecture](docs/images/architecture-detailed.png)
-
-### What stays where
+The full depth lives in [**Technical details**](docs/technical-details.md). Start there, or go straight to a topic:
 
 | System | Owns | How Salesforce uses it |
 |---|---|---|
