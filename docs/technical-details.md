@@ -57,13 +57,15 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 
 | Piece | What it is |
 |---|---|
-| [`Student_Record_Page`](../force-app/main/default/flexipages/Student_Record_Page.flexipage-meta.xml) | Lightning record page for Contact: highlights, the Student 360 card, then tabs for *Data 360 and activity* (related lists) and *Details*, with the activity timeline on the side. |
+| [`Student_Record_Page`](../force-app/main/default/flexipages/Student_Record_Page.flexipage-meta.xml) | Lightning record page for Contact: highlights, the Student 360 card, then tabs for *Data 360* (all six Data 360 lists together), *Related* and *Details* (the default tab). Activity and Notes & Attachments are on the right. |
 | [`student360Card`](../force-app/main/default/lwc/student360Card) | Lightning web component: engagement gauge, what-to-watch flags, courses, six metric tiles, financial aid status. |
 | [`Student360CardController`](../force-app/main/default/classes/Student360CardController.cls) | Apex controller. Reads the `Student_360_Graph` data graph by the student's unified profile, the same way the agent's Get Student 360 Data action does, and reads advising contact and overdue follow-ups live from the CRM. |
-| [`Contact Layout`](../force-app/main/default/layouts/Contact-Contact%20Layout.layout-meta.xml) | The six Data 360 related lists now have columns and sort order (below). |
+| [`Contact Layout`](../force-app/main/default/layouts/Contact-Contact%20Layout.layout-meta.xml) | Feeds the *Related* tab. The Data 360 lists and Notes & Attachments were moved off it to the page, so nothing shows twice. |
 | [`Contact.object-meta.xml`](../force-app/main/default/objects/Contact/Contact.object-meta.xml) | Makes the page the org-default desktop View page for Contact when deployed with `sf project deploy`. |
 
-**Related list columns** (newest first unless noted):
+**The Data 360 tab.** The six lists are Dynamic Related List – Single components, newest first unless noted. Submissions, page views and discussion posts are **engagement** data. A Data 360 related list on engagement data shows only the last 7 days unless it has a filter, so each of those three has a "date is not blank" filter (`submitted_at__c|NOT_EQUAL|` and so on) to show the full history. Attendance, enrollment and aid aren't engagement data and need no filter.
+
+**Columns:**
 
 | Data 360 object | Columns |
 |---|---|
