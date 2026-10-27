@@ -3,7 +3,9 @@
  * contact, first-gen / military / transfer flags, employer) plus a mobile number, job title,
  * languages and a short description, so the Student record page looks like a real student.
  *
- * Values are derived from each student's Student ID, so running it again gives the same result.
+ * Program, modality, enrollment intensity and terms follow each student's Canvas profile in Data 360
+ * (major, campus, enrollment status, class year), so the record agrees with what the agent reads.
+ * Everything else is derived from the Student ID, so running it again gives the same result.
  * By default it only fills blank fields; pass overwrite = true to regenerate everything it manages.
  * Run it as an invocable action:
  *   POST /services/data/v67.0/actions/custom/apex/StudentProfileSeeder  {"inputs":[{"overwrite":false}]}
@@ -22,15 +24,39 @@ public with sharing class StudentProfileSeeder {
         public String message;
     }
 
-    static final List<String> UNDERGRAD = new List<String>{
-        'BS Business Administration', 'BS Business Administration', 'BS Accounting', 'BS Psychology',
-        'BS Criminal Justice', 'BS Cybersecurity', 'BS Computer Information Systems',
-        'BS Health Care Management', 'RN to BSN', 'AS Early Childhood Education'
+    // Canvas majors and the program names they map to. Undergraduates get the BS/BA name, graduate
+    // students the master's name. Students with no Canvas profile get a random program from the same lists.
+    static final Map<String, List<String>> PROGRAMS = new Map<String, List<String>>{
+        'Biology' => new List<String>{ 'BS Biology', 'MS Biology' },
+        'Business Administration' => new List<String>{ 'BS Business Administration', 'MBA' },
+        'Chemistry' => new List<String>{ 'BS Chemistry', 'MS Chemistry' },
+        'Computer Science' => new List<String>{ 'BS Computer Science', 'MS Computer Science' },
+        'Economics' => new List<String>{ 'BS Economics', 'MS Economics' },
+        'English' => new List<String>{ 'BA English', 'MA English' },
+        'History' => new List<String>{ 'BA History', 'MA History' },
+        'Mathematics' => new List<String>{ 'BS Mathematics', 'MS Mathematics' },
+        'Mechanical Engineering' => new List<String>{ 'BS Mechanical Engineering', 'MS Mechanical Engineering' },
+        'Nursing' => new List<String>{ 'BS Nursing', 'MS Nursing' },
+        'Political Science' => new List<String>{ 'BA Political Science', 'MA Political Science' },
+        'Psychology' => new List<String>{ 'BS Psychology', 'MS Psychology' }
     };
-    static final List<String> GRAD = new List<String>{
-        'MBA', 'MBA', 'MS Accounting', 'MS Human Services', 'MEd Higher Education Administration'
+    static final List<String> MAJORS = new List<String>{
+        'Biology', 'Business Administration', 'Chemistry', 'Computer Science', 'Economics', 'English',
+        'History', 'Mathematics', 'Mechanical Engineering', 'Nursing', 'Political Science', 'Psychology'
     };
-    static final List<String> TERMS = new List<String>{ 'Spring', 'Summer', 'Fall' };
+    static final List<String> CLASS_YEARS = new List<String>{ 'Freshman', 'Sophomore', 'Junior', 'Senior' };
+    // Class year to start and expected-graduation terms for a full-time undergraduate (today: Fall 2026).
+    static final Map<String, List<String>> CLASS_YEAR_TERMS = new Map<String, List<String>>{
+        'Freshman' => new List<String>{ 'Fall 2026', 'Spring 2030' },
+        'Sophomore' => new List<String>{ 'Fall 2025', 'Spring 2029' },
+        'Junior' => new List<String>{ 'Fall 2024', 'Spring 2028' },
+        'Senior' => new List<String>{ 'Fall 2023', 'Spring 2027' }
+    };
+
+    // Canvas profile by Student ID: major, class year, enrollment status, campus. Tests set this directly.
+    @TestVisible
+    static Map<String, List<String>> canvasProfiles;
+
     static final List<List<String>> JOBS = new List<List<String>>{
         new List<String>{ 'Waterbury Hospital', 'Patient Care Technician' },
         new List<String>{ 'Travelers', 'Claims Associate' },
@@ -56,23 +82,24 @@ public with sharing class StudentProfileSeeder {
         'Benjamin' => 'Ben', 'Victoria' => 'Tori', 'Jonathan' => 'Jon', 'Gabriel' => 'Gabe'
     };
 
-    // The two demo students the scripts and tests talk about get a fixed, story-consistent profile.
+    // The two demo students the scripts and tests talk about get a fixed, story-consistent profile
+    // (program, modality and intensity still agree with their Canvas profiles).
     static final Map<String, Map<String, Object>> DEMO = new Map<String, Map<String, Object>>{
         'U00002' => new Map<String, Object>{
-            'Program__c' => 'BS Business Administration', 'Program_Modality__c' => 'Online',
-            'Enrollment_Intensity__c' => 'Full-time', 'Start_Term__c' => 'Fall 2025',
-            'Expected_Graduation_Term__c' => 'Spring 2029', 'Preferred_Contact_Method__c' => 'Text Message',
+            'Program__c' => 'BA History', 'Program_Modality__c' => 'On Campus',
+            'Enrollment_Intensity__c' => 'Part-time', 'Start_Term__c' => 'Fall 2026',
+            'Expected_Graduation_Term__c' => 'Fall 2030', 'Preferred_Contact_Method__c' => 'Text Message',
             'Employer__c' => 'Target', 'Title' => 'Sales Associate', 'Languages__c' => 'English',
             'First_Generation__c' => true, 'Military_Affiliated__c' => false, 'Transfer_Student__c' => false,
-            'Description' => 'Full-time online student in BS Business Administration. Works part-time as a Sales Associate at Target. First in their family to attend college.'
+            'Description' => 'Part-time on-campus student in BA History. Works as a Sales Associate at Target. First in their family to attend college.'
         },
         'U00017' => new Map<String, Object>{
-            'Program__c' => 'MS Human Services', 'Program_Modality__c' => 'Online',
+            'Program__c' => 'MS Chemistry', 'Program_Modality__c' => 'On Campus',
             'Enrollment_Intensity__c' => 'Part-time', 'Start_Term__c' => 'Spring 2025',
             'Expected_Graduation_Term__c' => 'Fall 2027', 'Preferred_Contact_Method__c' => 'Email',
             'Employer__c' => 'Hartford HealthCare', 'Title' => 'Medical Assistant', 'Languages__c' => 'English',
             'First_Generation__c' => false, 'Military_Affiliated__c' => true, 'Transfer_Student__c' => false,
-            'Description' => 'Part-time online student in MS Human Services, currently on leave. Works as a Medical Assistant at Hartford HealthCare. Military spouse.'
+            'Description' => 'Part-time on-campus student in MS Chemistry, currently on leave. Works as a Medical Assistant at Hartford HealthCare. Military spouse.'
         }
     };
 
@@ -86,13 +113,18 @@ public with sharing class StudentProfileSeeder {
                    First_Generation__c, Military_Affiliated__c, Transfer_Student__c, Employer__c
             FROM Contact WHERE Student_ID__c != null
         ];
+        Map<String, List<String>> canvas = loadCanvas();
+        Integer matched = 0;
         for (Contact c : students) {
+            if (canvas.containsKey(c.Student_ID__c)) {
+                matched++;
+            }
             apply(c, overwrite);
         }
         update students;
         Result r = new Result();
         r.updated = students.size();
-        r.message = 'Seeded ' + students.size() + ' students' + (overwrite ? ' (overwrite).' : ' (blank fields only).');
+        r.message = 'Seeded ' + students.size() + ' students, ' + matched + ' matched to a Canvas profile' + (overwrite ? ' (overwrite).' : ' (blank fields only).');
         return new List<Result>{ r };
     }
 
@@ -110,32 +142,48 @@ public with sharing class StudentProfileSeeder {
         Boolean isGrad = c.Student_Level__c == 'Graduate';
         Boolean onLeave = c.Student_Stage__c == 'On Leave';
 
-        String program = isGrad ? GRAD[roll(sid, 'd0', GRAD.size())] : UNDERGRAD[roll(sid, 'd3', UNDERGRAD.size())];
-        Integer m = roll(sid, 'd7', 20);
-        String modality = m < 15 ? 'Online' : (m < 18 ? 'Hybrid' : 'On Campus');
-        String intensity = onLeave || roll(sid, 'd11', 20) < 11 ? 'Part-time' : 'Full-time';
+        List<String> profile = loadCanvas().get(sid);
+        String major = profile != null && PROGRAMS.containsKey(profile[0]) ? profile[0] : MAJORS[roll(sid, 'd3', MAJORS.size())];
+        String program = PROGRAMS.get(major)[isGrad ? 1 : 0];
+        String canvasStatus = profile != null ? profile[2] : null;
+        String modality;
+        if (profile != null) {
+            modality = profile[3] == 'Online' ? 'Online' : 'On Campus';
+        } else {
+            Integer m = roll(sid, 'd7', 20);
+            modality = m < 15 ? 'Online' : (m < 18 ? 'Hybrid' : 'On Campus');
+        }
+        String intensity;
+        if (onLeave || canvasStatus == 'Part-time' || canvasStatus == 'Leave of Absence') {
+            intensity = 'Part-time';
+        } else if (canvasStatus == 'Full-time') {
+            intensity = 'Full-time';
+        } else {
+            intensity = roll(sid, 'd11', 20) < 11 ? 'Part-time' : 'Full-time';
+        }
 
-        // Start between Spring 2022 and Fall 2026; finish date follows program length and intensity.
-        Integer startIndex = roll(sid, 'd13', 15);            // 0..14 terms after Spring 2022
-        Integer startYear = 2022 + startIndex / 3;
-        String startSeason = TERMS[Math.mod(startIndex, 3)];
-        Integer years = program.startsWith('AS ') ? 2 : (isGrad ? 2 : 4);
-        if (intensity == 'Part-time') {
-            years += isGrad ? 1 : 2;
+        // Terms follow the Canvas class year. Graduate students: two years full-time, plus a term part-time.
+        String classYear = profile != null ? profile[1] : CLASS_YEARS[roll(sid, 'd13', 4)];
+        if (!CLASS_YEAR_TERMS.containsKey(classYear)) {
+            classYear = 'Senior';    // Canvas says Graduate but the record says Undergraduate
         }
-        if (program == 'RN to BSN') {
-            years = intensity == 'Part-time' ? 3 : 2;
-        }
-        Boolean transfer = !isGrad && roll(sid, 'd17', 10) < 3;
-        if (transfer) {
-            years = Math.max(2, years - 1);
-        }
-        String gradSeason = startSeason == 'Fall' ? 'Spring' : 'Fall';
-        Integer gradYear = startYear + years - (startSeason == 'Fall' ? 0 : 1);
-        // Current students can't have a finish date in the past: the earliest is Spring 2027.
-        if (c.Student_Stage__c != 'Withdrawn' && (gradYear < 2027)) {
-            gradSeason = 'Spring';
-            gradYear = 2027;
+        Boolean transfer = !isGrad && classYear != 'Freshman' && roll(sid, 'd17', 10) < 3;
+        String startTerm;
+        String gradTerm;
+        if (isGrad) {
+            startTerm = 'Fall 2025';
+            gradTerm = intensity == 'Part-time' ? 'Fall 2027' : 'Spring 2027';
+        } else {
+            startTerm = CLASS_YEAR_TERMS.get(classYear)[0];
+            gradTerm = CLASS_YEAR_TERMS.get(classYear)[1];
+            if (transfer) {
+                // Transferred in a year later with credit; same expected finish.
+                Integer y = Integer.valueOf(startTerm.right(4)) + 1;
+                startTerm = 'Fall ' + Math.min(y, 2026);
+            }
+            if (intensity == 'Part-time') {
+                gradTerm = 'Fall ' + Integer.valueOf(gradTerm.right(4));
+            }
         }
 
         Integer methodPick = roll(sid, 'd19', 20);
@@ -154,8 +202,8 @@ public with sharing class StudentProfileSeeder {
         fill(c, 'Program__c', program, overwrite);
         fill(c, 'Program_Modality__c', modality, overwrite);
         fill(c, 'Enrollment_Intensity__c', intensity, overwrite);
-        fill(c, 'Start_Term__c', startSeason + ' ' + startYear, overwrite);
-        fill(c, 'Expected_Graduation_Term__c', gradSeason + ' ' + gradYear, overwrite);
+        fill(c, 'Start_Term__c', startTerm, overwrite);
+        fill(c, 'Expected_Graduation_Term__c', gradTerm, overwrite);
         fill(c, 'Preferred_Contact_Method__c', contactMethod, overwrite);
         fill(c, 'Languages__c', languages, overwrite);
         fill(c, 'MobilePhone', '(555) 555-' + String.valueOf(1000 + roll(sid, 'd43', 9000)), overwrite);
@@ -183,6 +231,32 @@ public with sharing class StudentProfileSeeder {
                 c.put(field, DEMO.get(c.Student_ID__c).get(field));
             }
         }
+    }
+
+    // Reads every student's Canvas profile from Data 360 once per run. If Data 360 can't be reached
+    // (for example in tests), students fall back to generated values.
+    static Map<String, List<String>> loadCanvas() {
+        if (canvasProfiles != null) {
+            return canvasProfiles;
+        }
+        canvasProfiles = new Map<String, List<String>>();
+        try {
+            ConnectApi.CdpQueryInput q = new ConnectApi.CdpQueryInput();
+            q.sql = 'SELECT user_id__c, major__c, class_year__c, enrollment_status__c, campus__c '
+                  + 'FROM Snowflake_Canvas_Users__dlm WHERE user_id__c LIKE \'U%\'';
+            ConnectApi.CdpQueryOutputV2 res = ConnectApi.CdpQuery.queryAnsiSqlV2(q);
+            while (res != null) {
+                for (ConnectApi.CdpQueryV2Row row : res.data) {
+                    List<Object> v = row.rowData;
+                    canvasProfiles.put(String.valueOf(v[0]), new List<String>{
+                        String.valueOf(v[1]), String.valueOf(v[2]), String.valueOf(v[3]), String.valueOf(v[4]) });
+                }
+                res = String.isBlank(res.nextBatchId) ? null : ConnectApi.CdpQuery.nextBatchAnsiSqlV2(res.nextBatchId);
+            }
+        } catch (Exception e) {
+            System.debug(LoggingLevel.WARN, 'Canvas profiles not loaded: ' + e.getMessage());
+        }
+        return canvasProfiles;
     }
 
     static String describe(Contact c, String program, String modality, String intensity, Boolean working,
