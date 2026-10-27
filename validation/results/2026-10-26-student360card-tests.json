@@ -1,10 +1,11 @@
 {
-  "run": "2026-10-26",
+  "run": "2026-10-27",
   "class": "Student360CardControllerTests",
-  "testsRun": 6,
+  "testsRun": 7,
   "failures": 0,
   "tests": [
     "advisingActivityComesFromTheCrm",
+    "aidYearCodesBecomeReadable",
     "flagsMatchWhatTheAgentCallsOut",
     "graphBecomesSnapshot",
     "lowScoreIsAtRiskAndHighScoreOnTrack",
@@ -13,9 +14,9 @@
   ],
   "coverage": {
     "Student360CardController": {
-      "linesCovered": 150,
-      "linesTotal": 178,
-      "percent": 84.3
+      "linesCovered": 158,
+      "linesTotal": 186,
+      "percent": 84.9
     }
   },
   "notes": "Run with runTestsSynchronous in the demo org. The live Data 360 read cannot run inside Apex tests, so graph parsing and flags are tested with a sample payload."

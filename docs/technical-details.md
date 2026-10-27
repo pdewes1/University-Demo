@@ -74,6 +74,8 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 | Canvas Discussion Entries | Posted at, course, topic, entry type, word count |
 | Banner Financial Aid Summary | Aid year, FAFSA status, FAFSA received date, verification status, academic progress. Status fields only, no amounts |
 
+Banner stores the aid year as a code, the two-digit start and end years, so `2627` is the 2026–27 aid year. The card shows it as *2026–27*. The related list shows the raw code.
+
 **The engagement score.** A calculated insight is keyed on the unified individual, not the Contact, so it can't be a related list. The card reads it from the data graph instead and shows it as the gauge.
 
 **Flag rules:**
@@ -92,7 +94,7 @@ The engagement bands are *On track* (75 and up), *Watch* (50 to 74) and *At risk
 
 **Access.** The card shows data only if the running user can see the Contact (`WITH USER_MODE`), the same rule as the Data 360 related lists on the page. Contact sharing is **Private**, so an advisor sees only the students they own, and only those students' Data 360 data. Checked with `UserRecordAccess` in the demo org: Advisor Jacqueline has no access to Priya Cooper and full access to her own two students. There are no sharing rules or manual shares on Contact. System administrators (View All Data) still see every student. That's by design, so demo the privacy as an advisor user, not as the admin.
 
-**Tests.** [`Student360CardControllerTests`](../force-app/main/default/classes/Student360CardControllerTests.cls): 6 tests, all passing, 84% coverage. They cover graph parsing, the flags and bands, CRM activity, and the no-profile and no-access paths. [Results](../validation/results/2026-10-26-student360card-tests.json)
+**Tests.** [`Student360CardControllerTests`](../force-app/main/default/classes/Student360CardControllerTests.cls): 7 tests, all passing, 85% coverage. They cover graph parsing, the flags and bands, aid-year formatting, CRM activity, and the no-profile and no-access paths. [Results](../validation/results/2026-10-26-student360card-tests.json)
 
 **Activating the page.** The page is deployed but has to be activated. Either deploy `Contact.object-meta.xml`, or open *Student Record Page* in Lightning App Builder, click **Activation**, and choose **Assign as Org Default** (desktop).
 
