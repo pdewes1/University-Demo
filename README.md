@@ -67,8 +67,6 @@ Post University's promise is an education that works with students' lives, not a
 | Fewer students leave; more graduate | Term-to-term persistence, attrition and graduation rate, tracked over terms |
 | Faster isn't careless | Advisor edits per draft, access refusals, and zero financial aid amounts exposed |
 
-The first three move within weeks, so they decide the pilot. Persistence and graduation take terms, so they decide the rollout.
-
 ## The recommendation
 
 Give every advisor an **Advisor Agent** in Agentforce, grounded in one trusted view of each student from **Data 360**.
