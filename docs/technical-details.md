@@ -48,6 +48,8 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 
 **A second build, Flow plus Apex.** `Academic_Advisor_Hybrid` is the same agent with the access check and simple record work moved into Flow: [Create Student Task](../force-app/main/default/flows/Advisor_Create_Student_Task.flow-meta.xml) and [Update Student Record](../force-app/main/default/flows/Advisor_Update_Student_Record.flow-meta.xml) (same 14 fields). Both call one shared check flow first, [Check Student Access](../force-app/main/default/flows/Advisor_Check_Student_Access.flow-meta.xml), which only reads the student if the running advisor owns them. The search, Data 360, Calendly, email and notes stay in Apex. Both agents are active. [Why each action is where it is](flow-vs-apex.md) · [How to test it against the original](../validation/README.md#running-the-hybrid-suite-and-comparing-it-with-the-original-agent)
 
+**A third build, standard actions first.** `Academic_Advisor_Standard` uses the standard **Query Records** action to find students and the standard **Update Record** action to change them. Contact sharing is Private, so both only reach the advisor's own students, and the [`Advisors_Keep_Student_ID_and_Owner`](../force-app/main/default/objects/Contact/Contact.object-meta.xml) validation rule stops advisors from changing the Student ID or owner. Tasks stay in Flow, because there's no standard create-record action for this agent type. Data 360, the email draft, Calendly and notes stay in Apex, because there's no standard action that does what they do. Demo it as an advisor user: an admin's View All Data bypasses sharing. [Agent Script](../agent/Academic_Advisor_Standard.agent) · [Why](flow-vs-apex.md#the-standard-actions-build)
+
 - **On a student record**, it uses that student without asking.
 - **Anywhere else** (Home, another object, Slack), it asks which student you mean or searches for them. It never treats a non-student record Id as a student.
 
@@ -224,6 +226,7 @@ Create the external credential and named credential, then set each advisor's eve
 
 1. Create a new employee agent in Agentforce Builder and replace its script with [`agent/Academic_Advisor_Student_Success.agent`](../agent/Academic_Advisor_Student_Success.agent).
    For the Flow + Apex build, deploy the three flows in `force-app/main/default/flows/` first, check flow first (they ship as Active), then use [`agent/Academic_Advisor_Hybrid.agent`](../agent/Academic_Advisor_Hybrid.agent).
+   For the standard-actions build, deploy the task flow and the Contact object (Private sharing and the validation rule), then use [`agent/Academic_Advisor_Standard.agent`](../agent/Academic_Advisor_Standard.agent).
 2. Publish and activate it.
 3. Grant it in **Academic Advisor Agent Access**, then assign each advisor:
    - Academic Advisor Agent Access;
@@ -240,14 +243,15 @@ Create the external credential and named credential, then set each advisor's eve
 ├── sfdx-project.json
 ├── agent/
 │   ├── Academic_Advisor_Student_Success.agent   Agent Script, all-Apex build (live version 9)
-│   └── Academic_Advisor_Hybrid.agent            Agent Script, Flow + Apex build (live version 3)
+│   ├── Academic_Advisor_Hybrid.agent            Agent Script, Flow + Apex build (live version 3)
+│   └── Academic_Advisor_Standard.agent          Agent Script, standard-actions build (live version 1)
 ├── force-app/main/default/
 │   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check, tests
 │   ├── flows/                                   Access-check, task and record-update flows for the hybrid agent
 │   ├── lwc/student360Card/                      Student 360 card for the student record page
 │   ├── flexipages/                              Student Record Page
 │   ├── layouts/                                 Contact layout with Data 360 related-list columns
-│   ├── objects/                                 Calendly_Event_Type_URI__c on User; Contact page override
+│   ├── objects/                                 Calendly_Event_Type_URI__c on User; Contact page override, Private sharing, validation rule
 │   ├── cspTrustedSites/                         Calendly trusted URL
 │   └── permissionsets/                          Agent access, Calendly access
 ├── data360/
@@ -258,7 +262,7 @@ Create the external credential and named credential, then set each advisor's eve
 ├── integrations/
 │   └── calendly.md
 ├── tools/build_flows.py                         Generates the hybrid agent's flows
-├── tests/                                       Testing Center suites for both agents, their generator, and a run comparison script
+├── tests/                                       Testing Center suites for all three agents, their generator, and a run comparison script
 ├── validation/
 │   ├── README.md                                Uncertainty, method, results for actions and four agent runs
 │   ├── persona-question-matrix.csv
