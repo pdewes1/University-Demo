@@ -13,7 +13,7 @@ I built this with an AI assistant (Claude) working against the org through the S
 
 | First attempt | What happened | What replaced it |
 |---|---|---|
-| Draft the email with a Prompt Builder template | The API forced Jinja format, and record inputs came through empty | Apex calls the Models API directly with a prompt it builds |
+| Draft the email with a Prompt Builder template | The API forced Jinja format, and record inputs came through empty | Apex calls the Models API directly with a prompt it builds. Revisited for the standard build: a template built in Prompt Builder and called as an agent action works ([details](flow-vs-apex.md#the-email-as-a-prompt-template)) |
 | Put the student's name in the prompt | The Trust Layer masked it inconsistently ("Hi Cooper") | Name placeholders, filled in by Apex after the model responds |
 | Create the data graph fully through the API | Engagement DMOs needed recency criteria in an undocumented format; full validation then failed on every recency field | Saved as a draft through the API and finished in the Data 360 UI (30 days, the UI maximum) |
 | Reuse the existing advisor agent's lookup flow | It filtered `UnifiedIndividual.Student_ID__c` with a Contact Id, which never matches | New action resolves through `Contact.Student_ID__c` |

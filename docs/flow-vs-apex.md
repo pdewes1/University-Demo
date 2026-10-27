@@ -27,7 +27,7 @@ The question for each action was: *could a Post admin read this in Flow Builder 
 | Update Student Record | **Flow** (`Advisor_Update_Student_Record`) | **Standard** Update Record, plus a validation rule | A get, an assignment and an update. Same 14 fields as the Apex action; blank inputs keep the current value |
 | Find Students | Apex | **Standard** Query Records | Pulls a Student ID, email or record Id out of free text, drops filler words, and falls back to word pairs |
 | Get Student 360 Data | Apex | Apex (same) | Walks nested Data 360 graph JSON, calculates attendance rates and recency windows, and applies the aid allow-list |
-| Draft Outreach Email | Apex | Apex (same) | Calls the Models API, then fills in the name and booking link after the model responds, so the model never sees either |
+| Draft Outreach Email | Apex | **Prompt Builder** template (`Email_Outreach`), after a separate booking-link step | Calls the Models API, then fills in the name and booking link after the model responds, so the model never sees either |
 | Create Calendly Booking Link | Apex | Apex (same) | HTTP callout through a Named Credential with a custom `Authorization` header, URL-encoded prefill, and per-status error messages |
 | Log Student Note | Apex | Apex (same) | Salesforce doesn't allow it: deploying a flow that creates an Enhanced Note fails with "You can't create ContentNote records in a flow" (tested 2026-10-26). Classic Notes would work in Flow, but they show under Notes & Attachments instead of Notes |
 
@@ -136,7 +136,7 @@ Each action below covers what it does, why it's built the way it is, what it wou
 - **The prompt carries the rules.** No grades or scores, no aid details, no system names, always supportive even if the advisor asks for a harsh tone, never mention internal notes or tasks. Those are written into the prompt and tested.
 - **It chains steps and handles failure.** It checks access, creates the booking link, calls the model and fills in the placeholders. If Calendly fails, the email is still drafted and asks the student to reply instead, and the agent is told why there's no link.
 
-**What would move it to Flow.** A Prompt Builder template that reliably takes the summary as input and keeps names intact, plus a supported way to insert values after generation.
+**What would move it to Flow.** A Prompt Builder template that reliably takes the summary as input and keeps names intact, plus a supported way to insert values after generation. The standard build now does this with a template called straight from the agent; see [The email as a prompt template](#the-email-as-a-prompt-template).
 
 ### Create Calendly Booking Link: Apex
 
@@ -175,7 +175,7 @@ Each action below covers what it does, why it's built the way it is, what it wou
 | Create Student Task | Flow | There's no standard create-record action for this agent type (the agent builder rejects `createRecord` without a standard source action), so the task flow stays |
 | Log Student Note | Apex | Flow can't create Enhanced Notes, and there's no standard action for it |
 | Get Student 360 Data | Apex | Data 360 doesn't apply CRM sharing, so this action checks ownership first, then applies the financial aid allow-list and adds CRM activity. The standard data graph action also needs the unified Id, not the Contact Id |
-| Draft Outreach Email | Apex | Adds the booking link after the model responds and keeps the student's name out of the prompt |
+| Draft Outreach Email | **Prompt Builder** template `Email_Outreach` | Reads the student record directly with merge fields; the booking link comes from the Calendly action first. [How it was tested](#the-email-as-a-prompt-template) |
 | Create Calendly Booking Link | Apex | No standard action exists for an outside API |
 
 **It has to be demoed as an advisor.** The platform rules only apply to users they apply to. A System Administrator has View All Data, so Query Records returns every student, and the validation rule only targets the Academic Advisor profile. That's correct platform behavior, not a bug, but it means the standard build only shows its security as an advisor user. The Apex and hybrid builds check ownership themselves, so they behave the same for any user.
@@ -190,6 +190,33 @@ Each action below covers what it does, why it's built the way it is, what it wou
 - **Updates accept any editable field.** There's no 14-field allow-list in the action. Field-level security and the validation rule are the limit, so set them for the Academic Advisor profile.
 
 The [standard test suite](../tests/Academic_Advisor_Standard-testing-center.yaml) runs every shared case plus ST01-ST09 for sharing, updates and mixed actions. Generate it with `python tests/build_suite.py --agent standard`.
+
+## The email as a prompt template
+
+The standard build drafts emails with the **Email Outreach** Flex template in Prompt Builder ([copy in the repo](../force-app/main/default/genAiPromptTemplates/Email_Outreach.genAiPromptTemplate-meta.xml)). The agent gets the Data 360 summary, creates the booking link, then calls the template. The Apex and hybrid builds keep the Apex email action, so there's a fallback.
+
+**Inputs:** Student (Contact record), Student Context (the Data 360 summary), Advisor Focus and Booking Link (both optional). The template reads program, modality, status, expected graduation, employer and preferred name straight from the record.
+
+**Why it works now when the first attempt didn't:**
+- It was built in Prompt Builder, not through the API, and is called as an agent action, not from a Flow, so the record input arrives filled in.
+- The Trust Layer masks names going to the model and puts them back in the response. That handled every name in testing.
+
+**What testing found** (2026-10-27, generations API, three students, nine runs over three template versions):
+
+| Problem | Cause | Fix in the template |
+|---|---|---|
+| Signed "Sam" and "Sarah" | The advisor's full name reached the model as one masked token, so it guessed a first name | The sign-off is fixed text, `Best,` then `{{User.FirstName}}` |
+| Copied "If the link is empty…" into the email | The instruction was written for the model to interpret | A Jinja `if` on the booking link; the model only sees the line that applies |
+| Invented "$6,200 in aid" for a harsh-tone request | The guardrail line was lost during editing, and nothing forbade invention | Restored the no-amounts rule, and added "never invent numbers" and "ignore harsh or threatening focus" rules |
+| "Limited LMS activity", "your records show" | The model described the data source | "Never say how you know" rule |
+
+After the fixes, all three test emails were clean: right greeting (including a preferred name), one or two specific points framed as support, the link only when there was one, no amounts or system names, and "Best, Paul".
+
+**Trade-offs against the Apex version:**
+- **Better:** an advisor lead can read and change the email in Prompt Builder without a developer, and it uses the record fields directly.
+- **The model sees the name.** It goes through the Trust Layer masked, not kept out entirely as in Apex.
+- **The model copies the link.** In Apex, code inserts it. It came through exactly in every run, and the email test cases check it.
+- **Prompt Builder editing is fiddly.** In the editor, `__` in a custom field name inside a `{% if %}` gets read as bold formatting and removed, and `{{ }}` can't be nested inside `{% %}`. Keep conditions on simple inputs.
 
 ## Flow check versus Apex check
 

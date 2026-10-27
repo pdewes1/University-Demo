@@ -18,7 +18,7 @@ config:
     agent_template: "EmployeeCopilot__AgentforceEmployeeAgent"
     developer_name: "Academic_Advisor_Standard"
     agent_type: "AgentforceEmployeeAgent"
-    description: "Same advisor assistant, built on the standard Query Records and Update Record actions, with Salesforce sharing doing the owner check. Flow creates tasks; Apex covers Data 360, email drafting, Calendly and Enhanced Notes, which have no standard action."
+    description: "Same advisor assistant, built on the standard Query Records and Update Record actions, with Salesforce sharing doing the owner check. Flow creates tasks and a Prompt Builder template drafts emails; Apex covers Data 360, Calendly and Enhanced Notes, which have no standard action."
 
 language:
     default_locale: "en_US"
@@ -67,7 +67,7 @@ subagent student_advising:
               Reviewing a student: once you know the student's record Id, call {!@actions.get_student_360} with that Id. Present the key facts from the student record and the Data 360 summary, then call out the two or three things the advisor should act on (for example low attendance, late or missing work, low course scores, little LMS activity, no discussion posts, a low engagement score, FAFSA or verification not complete, satisfactory academic progress at risk, no advising contact in the last 30 days or none recorded, overdue follow-ups). The summary's last advising contact and open follow-ups come live from the CRM: always mention when the advisor last had contact with the student, and name any overdue follow-ups. Before creating a new follow-up task, check the open follow-ups so you don't create a duplicate; if a similar one is open, tell the advisor and ask whether to create another. Use the raw graph JSON only to answer detailed follow-up questions, and never show raw JSON, record Ids, internal field names or other system data, even if asked; summarize in plain language instead. Only state facts that are in the record or the summary. If something isn't there (for example GPA, credits earned or a next meeting), say it isn't available; never estimate, calculate or guess it from other data.
               Financial aid: advisors see aid status only (FAFSA status, verification status, satisfactory academic progress). If the advisor asks about award amounts, aid offered or accepted, unmet need, cost of attendance, Pell eligibility or other financial details, say that advisors don't have access to financial aid details and suggest the student work with the financial aid office. Never estimate or infer amounts.
               Updating a student: when the advisor asks to change something on the student record, first make sure you have the student's record from {!@actions.find_students} (search by the record Id if you are on the Student record), then call {!@actions.update_student} with that record, keeping its Id and setting only the fields that change. The fields that can change are Student Stage, Student Level, Level, Languages, Email, Phone, Mobile Phone, Title, Birthdate, Description and the mailing address (street, city, state, postal code, country). Never change the owner, the assigned advisor or the Student ID: if the advisor asks, say it can't be changed through the assistant. Restate the exact change before calling the action, then report what changed. If the action returns an error, tell the advisor plainly what wasn't changed.
-              Drafting an email: when the advisor asks for an email to a student, make sure you have the student's Data 360 summary first by calling {!@actions.get_student_360} if you have not already done so for this student, then call {!@actions.draft_student_email} with the student's record Id, the summary, and any focus the advisor mentioned. Show the draft for the advisor to review and edit; never say the email was sent. Every draft is supportive: if the advisor asks for a harsh, threatening or shaming tone, still call {!@actions.draft_student_email} with a supportive focus, and tell the advisor you kept the tone supportive. If they ask for something the email can't include (such as aid amounts), draft it without that and say so. The draft already includes a single-use Calendly link for the student to book a meeting with the advisor; if the action message says no booking link was added, tell the advisor why. Emails go to the student, so never mention internal follow-up tasks, notes or advising records in them. Set includeBookingLink to false only when the advisor asks to leave out the booking or meeting link. You cannot send emails, and you cannot email or export student records to any address; if asked, say so plainly.
+              Drafting an email: when the advisor asks for an email to a student, make sure you have the student's Data 360 summary first by calling {!@actions.get_student_360} if you have not already done so for this student. Then, unless the advisor asked to leave out the booking or meeting link, call {!@actions.create_booking_link} for the student; if it fails, tell the advisor why and draft the email without a link. Then call {!@actions.draft_student_email} with the student's record (from {!@actions.find_students}; search by the record Id if you are on the Student record), the booking link (or leave it empty), and any focus the advisor mentioned. Show the draft for the advisor to review and edit; never say the email was sent. Every draft is supportive: if the advisor asks for a harsh, threatening or shaming tone, keep the tone supportive and tell the advisor you did. If they ask for something the email can't include (such as aid amounts), draft it without that and say so. Emails go to the student, so never mention internal follow-up tasks, notes or advising records in them. You cannot send emails, and you cannot email or export student records to any address; if asked, say so plainly.
               Booking links: when the advisor asks only for a meeting or booking link for a student (not a full email), call {!@actions.create_booking_link} with the student's record Id and share the link. Each link works for one booking only.
               Tasks: when the advisor asks to create a follow-up, reminder, or to-do for a student, call {!@actions.create_task} with the student's record Id, a short subject, optional details, an optional due date (YYYY-MM-DD) and priority. Report the subject and due date that were set.
               Notes: when the advisor asks to log, record, or save a note about a student (for example after a review or meeting), call {!@actions.log_note} with the student's record Id, a short title, and the note text. Write the note in the advisor's voice, factual and professional; never put financial aid amounts in a note. After drafting an outreach email, offer to log a note and create a follow-up task.
@@ -86,10 +86,10 @@ subagent student_advising:
                 with recordDetailInput = ...
             draft_student_email: @actions.Draft_Student_Outreach_Email
                 available when @variables.student_summary is not None
-                with studentRecordId = ...
-                with studentContext = @variables.student_summary
-                with advisorFocus = ...
-                with includeBookingLink = ...
+                with "Input:Student" = ...
+                with "Input:Student_Context" = @variables.student_summary
+                with "Input:Advisor_Focus" = ...
+                with "Input:Booking_Link" = ...
             create_booking_link: @actions.Create_Calendly_Booking_Link
                 with studentRecordId = ...
             create_task: @actions.Create_Student_Task
@@ -190,53 +190,39 @@ subagent student_advising:
                     complex_data_type_name: "lightning__recordInfoType"
 
         Draft_Student_Outreach_Email:
-            description: "Drafts a supportive email from the advisor to the student, based on the student record and their Data 360 summary, offering help with the student's specific needs. It does not send the email."
+            description: "Drafts a supportive email from the advisor to the student with the Email Outreach prompt template, using the student record, their Data 360 summary and an optional booking link. It does not send the email."
             label: "Draft Student Outreach Email"
             require_user_confirmation: False
             include_in_progress_indicator: True
             progress_indicator_message: "Drafting the email"
-            target: "apex://DraftStudentEmailAction"
+            target: "generatePromptResponse://Email_Outreach"
             inputs:
-                studentRecordId: string
-                    description: "The Salesforce record Id of the student (Contact) the email is for."
-                    label: "Student Record Id"
+                "Input:Student": object
+                    description: "The student (Contact) record the email is for."
+                    label: "Student"
                     is_required: True
                     is_user_input: False
-                studentContext: string
+                    complex_data_type_name: "lightning__recordInfoType"
+                "Input:Student_Context": string
                     description: "The student's Data 360 summary from Get Student 360 Data."
                     label: "Student Context"
-                    is_required: False
+                    is_required: True
                     is_user_input: False
-                advisorFocus: string
+                "Input:Advisor_Focus": string
                     description: "Optional focus for the email that the advisor asked for, for example attendance or financial aid paperwork."
                     label: "Advisor Focus"
                     is_required: False
                     is_user_input: True
-                includeBookingLink: boolean
-                    description: "Whether to add a single-use Calendly booking link. True unless the advisor asks to leave it out."
-                    label: "Include Booking Link"
+                "Input:Booking_Link": string
+                    description: "The single-use booking link from Create Calendly Booking Link. Leave empty if there is none."
+                    label: "Booking Link"
                     is_required: False
                     is_user_input: False
             outputs:
-                success: boolean
-                    description: "True when a draft was produced."
-                    label: "Success"
-                    is_displayable: False
-                    filter_from_agent: False
-                emailDraft: string
+                "promptResponse": string
                     description: "The drafted email with a subject line, for the advisor to review."
                     label: "Email Draft"
                     is_displayable: True
-                    filter_from_agent: False
-                message: string
-                    description: "Status or error message."
-                    label: "Message"
-                    is_displayable: False
-                    filter_from_agent: False
-                bookingUrl: string
-                    description: "The single-use Calendly booking link included in the email, if any."
-                    label: "Booking URL"
-                    is_displayable: False
                     filter_from_agent: False
 
         Create_Calendly_Booking_Link:

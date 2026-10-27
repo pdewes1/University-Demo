@@ -413,7 +413,8 @@ STANDARD_CASES = [
 ]
 
 # The standard agent's search action has a different definition name, and it fetches the record
-# before an update when it starts from the open Student record.
+# before an update or an email when it starts from the open Student record. Its email is the Email
+# Outreach prompt template, so the booking link is created as a separate step first.
 STANDARD_ACTION_NAMES = {"find_students": "QueryStudentRecords"}
 
 
@@ -423,6 +424,14 @@ def standardize(cases):
         cid, cat, utt, ctx, topic, actions, outcome, hist = c
         if "update_student" in actions and "find_students" not in actions and not hist:
             actions = ["find_students"] + actions
+        if "draft_student_email" in actions:
+            if "find_students" not in actions and not hist:
+                actions = ["find_students"] + actions
+            if "create_booking_link" not in actions and "leave out the booking link" not in utt:
+                i = actions.index("draft_student_email")
+                actions = actions[:i] + ["create_booking_link"] + actions[i:]
+            if cid == "E06":
+                outcome = "Draft contains no booking link, and the agent doesn't create one."
         out.append((cid, cat, utt, ctx, topic, actions, outcome, hist))
     return out
 

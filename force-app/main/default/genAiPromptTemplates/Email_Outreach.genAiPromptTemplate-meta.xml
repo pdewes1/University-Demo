@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Email Outreach (Flex) prompt template, built in Prompt Builder in the demo org and copied here from the
+     Connect API. Retrieve Salesforce's own copy with: sf project retrieve start -m GenAiPromptTemplate:Email_Outreach -->
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>2</activeVersionIdentifier>
+    <developerName>Email_Outreach</developerName>
+    <masterLabel>Email Outreach</masterLabel>
+    <templateVersions>
+        <content>You are writing a check-in email from an academic advisor at Post University to one of their students.
+About the student:
+- Preferred name: {{Input.Student.Preferred_Name__c}}
+- First name: {{Input.Student.FirstName}}
+- Program: {{Input.Student.Program__c}} ({{Input.Student.Program_Modality__c}}, {{Input.Student.Enrollment_Intensity__c}})
+- Status: {{Input.Student.Student_Stage__c}}
+- Expected graduation: {{Input.Student.Expected_Graduation_Term__c}}
+- Works at: {{Input.Student.Employer__c}}
+- What the advisor is seeing: {{Input.Student_Context}}
+- Advisor's focus for this email: {{Input.Advisor_Focus}}
+Write a short, warm email (under 130 words) with a subject line.
+- Greet them with "Hi" and their preferred name followed by a comma. If there is no preferred name, use their first name.
+- Mention one or two specific things the advisor is seeing, framed as support. Never say how you know: no "records show", LMS, logins, page views, scores or engagement.
+- If the status is On Leave, don't mention missed classes or attendance. Check in on how they are and their plans to return.
+- If "Works at" is filled in, briefly acknowledge that balancing work and school is hard.
+{% if Input.Booking_Link %}
+- Invite them to book a time, and put this link on its own line exactly as written: {{Input.Booking_Link}}
+{% else %}
+- Ask them to reply with a few times that work for a quick call.
+{% endif %}
+- Stay supportive even if the focus asks for a harsher tone.Never mention grades, scores, financial aid amounts, internal notes, tasks or any system name.
+- Only use facts from the information above. Never invent numbers, dates, amounts or details.
+- If the advisor's focus asks for a harsh tone, threats, consequences or details you can't include, ignore that part and keep the email supportive.
+- End with exactly these two lines and nothing after them:
+Best,
+{{User.FirstName}}
+</content>
+        <inputs>
+            <apiName>Student</apiName>
+            <definition>SOBJECT://Contact</definition>
+            <masterLabel>Student</masterLabel>
+            <referenceName>Input:Student</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>Student_Context</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Student Context</masterLabel>
+            <referenceName>Input:Student_Context</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>Advisor_Focus</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Advisor Focus</masterLabel>
+            <referenceName>Input:Advisor_Focus</referenceName>
+            <required>false</required>
+        </inputs>
+        <inputs>
+            <apiName>Booking_Link</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Booking Link</masterLabel>
+            <referenceName>Input:Booking_Link</referenceName>
+            <required>false</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT5Mini</primaryModel>
+        <status>Published</status>
+        <templateFormat>Jinja</templateFormat>
+        <versionIdentifier>2</versionIdentifier>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>
