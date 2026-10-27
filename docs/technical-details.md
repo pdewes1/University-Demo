@@ -4,6 +4,7 @@ The deeper material behind the [README](../README.md): the decision in full, the
 
 - [Decision summary](#decision-summary)
 - [Actions and implementation](#actions-and-implementation)
+- [Student record page](#student-record-page)
 - [Architecture details](#architecture-details)
 - [Data 360](#data-360)
 - [Focused technical validation](#focused-technical-validation)
@@ -49,6 +50,51 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 
 - **On a student record**, it uses that student without asking.
 - **Anywhere else** (Home, another object, Slack), it asks which student you mean or searches for them. It never treats a non-student record Id as a student.
+
+## Student record page
+
+**What's in the org:**
+
+| Piece | What it is |
+|---|---|
+| [`Student_Record_Page`](../force-app/main/default/flexipages/Student_Record_Page.flexipage-meta.xml) | Lightning record page for Contact: highlights, the Student 360 card, then tabs for *Data 360 and activity* (related lists) and *Details*, with the activity timeline on the side. |
+| [`student360Card`](../force-app/main/default/lwc/student360Card) | Lightning web component: engagement gauge, what-to-watch flags, courses, six metric tiles, financial aid status. |
+| [`Student360CardController`](../force-app/main/default/classes/Student360CardController.cls) | Apex controller. Reads the `Student_360_Graph` data graph by the student's unified profile, the same way the agent's Get Student 360 Data action does, and reads advising contact and overdue follow-ups live from the CRM. |
+| [`Contact Layout`](../force-app/main/default/layouts/Contact-Contact%20Layout.layout-meta.xml) | The six Data 360 related lists now have columns and sort order (below). |
+| [`Contact.object-meta.xml`](../force-app/main/default/objects/Contact/Contact.object-meta.xml) | Makes the page the org-default desktop View page for Contact when deployed with `sf project deploy`. |
+
+**Related list columns** (newest first unless noted):
+
+| Data 360 object | Columns |
+|---|---|
+| Canvas Enrollment | Course, term, state, current score, final grade (by course) |
+| Canvas Attendance | Class date, course, section, status |
+| Canvas Submissions | Submitted at, course, assignment, state, score, points possible |
+| Canvas Page Views | Time, course, event type, duration, device |
+| Canvas Discussion Entries | Posted at, course, topic, entry type, word count |
+| Banner Financial Aid Summary | Aid year, FAFSA status, FAFSA received date, verification status, academic progress. Status fields only, no amounts |
+
+**The engagement score.** A calculated insight is keyed on the unified individual, not the Contact, so it can't be a related list. The card reads it from the data graph instead and shows it as the gauge.
+
+**Flag rules:**
+- **Low engagement score:** engagement band below 50.
+- **Attendance:** flagged below 80%, otherwise any absence is flagged.
+- **Assignments:** any missing assignment is flagged, otherwise any late one.
+- **No discussion posts.**
+- **Little LMS activity:** fewer than 5 page views.
+- **FAFSA not received.**
+- **Aid verification pending.**
+- **Academic progress:** anything other than *Met*.
+- **No advising contact:** none recorded, or none in more than 30 days.
+- **Overdue follow-ups.**
+
+The engagement bands are *On track* (75 and up), *Watch* (50 to 74) and *At risk* (below 50). These follow the signals the agent is told to call out. Tune the thresholds once real terms of data exist.
+
+**Access.** The card shows data only if the running user can see the Contact (`WITH USER_MODE`), the same rule as the Data 360 related lists on the page. Unlike the agent, it doesn't also require the viewer to own the student. In production, set Contact sharing to Private with advisor-based sharing, so advisors see only their own students' records, and therefore their Data 360 data.
+
+**Tests.** [`Student360CardControllerTests`](../force-app/main/default/classes/Student360CardControllerTests.cls): 6 tests, all passing, 84% coverage. They cover graph parsing, the flags and bands, CRM activity, and the no-profile and no-access paths. [Results](../validation/results/2026-10-26-student360card-tests.json)
+
+**Activating the page.** The page is deployed but has to be activated. Either deploy `Contact.object-meta.xml`, or open *Student Record Page* in Lightning App Builder, click **Activation**, and choose **Assign as Org Default** (desktop).
 
 ## Architecture details
 
@@ -163,7 +209,8 @@ This deploys:
 - the Apex actions;
 - the `User.Calendly_Event_Type_URI__c` field;
 - the Calendly Trusted URL;
-- the two permission sets.
+- the two permission sets;
+- the Student Record Page, the `student360Card` component and its controller, the Contact layout with Data 360 related-list columns, and the Contact page override that makes the page the default.
 
 ### 4. Calendly
 
@@ -193,7 +240,10 @@ Create the external credential and named credential, then set each advisor's eve
 ├── force-app/main/default/
 │   ├── classes/                                 Apex actions, owner-filtered search, Calendly client, access check, tests
 │   ├── flows/                                   Access-check, task and record-update flows for the hybrid agent
-│   ├── objects/User/fields/                     Calendly_Event_Type_URI__c
+│   ├── lwc/student360Card/                      Student 360 card for the student record page
+│   ├── flexipages/                              Student Record Page
+│   ├── layouts/                                 Contact layout with Data 360 related-list columns
+│   ├── objects/                                 Calendly_Event_Type_URI__c on User; Contact page override
 │   ├── cspTrustedSites/                         Calendly trusted URL
 │   └── permissionsets/                          Agent access, Calendly access
 ├── data360/

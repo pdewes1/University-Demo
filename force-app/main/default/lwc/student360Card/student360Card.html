@@ -1,0 +1,98 @@
+<template>
+    <article class="card">
+        <header class="head">
+            <div class="head-title">
+                <lightning-icon icon-name="standard:customer_360" size="small" alternative-text="Data 360"></lightning-icon>
+                <div>
+                    <h2>Student 360</h2>
+                    <p>Banner, Canvas and the CRM in one view · from Data 360</p>
+                </div>
+            </div>
+        </header>
+
+        <template lwc:if={loading}>
+            <div class="state"><lightning-spinner size="small" alternative-text="Loading Data 360"></lightning-spinner></div>
+        </template>
+        <template lwc:elseif={error}>
+            <div class="state state-msg">{error}</div>
+        </template>
+        <template lwc:else>
+            <template lwc:if={notice}>
+                <div class="notice">{notice}</div>
+            </template>
+
+            <section class="top">
+                <div class="gauge">
+                    <svg viewBox="0 0 120 120" class="ring" aria-hidden="true">
+                        <circle cx="60" cy="60" r="52" class="ring-track"></circle>
+                        <circle cx="60" cy="60" r="52" class={ringClass} stroke-dasharray={ringDash} transform="rotate(-90 60 60)"></circle>
+                    </svg>
+                    <div class="gauge-text">
+                        <span class="gauge-score">{scoreText}</span>
+                        <span class="gauge-max">/ 100</span>
+                    </div>
+                    <div class="gauge-label">Engagement score</div>
+                    <span class={bandClass}>{bandText}</span>
+                </div>
+
+                <div class="watch">
+                    <h3>What to watch</h3>
+                    <template lwc:if={hasFlags}>
+                        <ul class="flags">
+                            <template for:each={flags} for:item="f">
+                                <li key={f.key} class="flag">
+                                    <lightning-icon icon-name="utility:warning" size="xx-small" class="flag-icon"></lightning-icon>
+                                    {f.label}
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:else>
+                        <p class="all-clear">
+                            <lightning-icon icon-name="utility:success" size="xx-small"></lightning-icon>
+                            Nothing needs attention right now.
+                        </p>
+                    </template>
+                    <template lwc:if={hasCourses}>
+                        <h3 class="sub-head">Courses</h3>
+                        <div class="courses">
+                            <template for:each={courses} for:item="c">
+                                <span key={c.key} class={c.cls}>{c.label}<b>{c.score}</b></span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <section class="tiles">
+                <template for:each={tiles} for:item="t">
+                    <div key={t.key} class={t.cls}>
+                        <div class="tile-label">
+                            <lightning-icon icon-name={t.icon} size="xx-small"></lightning-icon>
+                            {t.label}
+                        </div>
+                        <div class="tile-value">{t.value}</div>
+                        <div class="tile-detail">{t.detail}</div>
+                    </div>
+                </template>
+            </section>
+
+            <section class="aid">
+                <div class="aid-head">
+                    <h3>{aidYear}</h3>
+                    <span class="aid-note">Status only. Award amounts stay with the financial aid office.</span>
+                </div>
+                <div class="aid-row">
+                    <template for:each={aid} for:item="a">
+                        <div key={a.key} class={a.cls}>
+                            <span class="aid-label">{a.label}</span>
+                            <span class="aid-value">{a.value}</span>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <footer class="foot">Engagement weighs on-time work, attendance, LMS activity and discussion. Grades are not part of it. Activity covers the last 30 days and refreshes daily.</footer>
+        </template>
+    </article>
+</template>

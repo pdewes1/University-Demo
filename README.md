@@ -1,6 +1,6 @@
 # Post University Student Success Agents
 
-[About me](#about-me) · [About Post University](#about-post-university) · [The goal](#the-goal) · [The challenges](#the-challenges) · [Outcomes](#outcomes-were-driving-and-measuring) · [The recommendation](#the-recommendation) · [Assumptions](#assumptions) · [Advisor Agent](#advisor-agent) · [Architecture](#architecture) · [Trust boundaries](#trust-boundaries) · [Data 360](#data-360) · [Validation](#focused-technical-validation) · [Setup](#setup) · [Technical specifics](#technical-specifics)
+[About me](#about-me) · [About Post University](#about-post-university) · [The goal](#the-goal) · [The challenges](#the-challenges) · [Outcomes](#outcomes-were-driving-and-measuring) · [The recommendation](#the-recommendation) · [Assumptions](#assumptions) · [Advisor Agent](#advisor-agent) · [Student record](#the-student-record) · [Architecture](#architecture) · [Trust boundaries](#trust-boundaries) · [Data 360](#data-360) · [Validation](#focused-technical-validation) · [Setup](#setup) · [Technical specifics](#technical-specifics)
 
 ## About me
 
@@ -139,6 +139,28 @@ Illustrative, based on a real 360 summary for a synthetic student:
 >
 > **Agent:** *(draft with a single-use booking link)* Want me to log a note and set a follow-up task?
 
+## The student record
+
+The same Data 360 view is on the student's record page, so an advisor gets the picture before they ask the agent anything.
+
+![Student 360 card](docs/images/student-360-card.png)
+<sub>Illustrative preview with synthetic values. In the org the card reads the student's live Data 360 profile.</sub>
+
+- **The engagement score, front and centre.** The Student Engagement Score (the Data 360 calculated insight) shows as a gauge with a plain band: *On track*, *Watch* or *At risk*.
+- **What to watch.** The same signals the agent calls out, as short flags: missed classes, late or missing work, no discussion posts, little LMS activity, aid paperwork pending, academic progress at risk, no recent contact, overdue follow-ups.
+- **Six numbers at a glance:** attendance, on-time work, course average, LMS activity, discussion posts and days since the last advising contact, each coloured by how it's trending.
+- **Financial aid as status only:** FAFSA, verification and academic progress, with no award amounts.
+- **The detail behind it.** The Data 360 related lists for enrollments, attendance, submissions, page views, discussion posts and aid status now show the columns an advisor needs, newest first.
+
+**Why it matters to an advisor:**
+
+- **Prep in seconds, not three systems.** Opening a student's record answers "how are they doing?" before the call or meeting.
+- **Triage without asking.** The colour and the flags show who needs outreach today, even on a full caseload.
+- **One source of truth.** The card, the related lists and the agent all read the same Data 360 profile, so the advisor never sees two different answers.
+- **The agent is one click away.** From the same page the advisor can ask the agent to draft the email, set the follow-up and log the note.
+
+[How the record page is built](docs/technical-details.md#student-record-page)
+
 ## Architecture
 
 ![Architecture](docs/images/architecture-detailed.png)
@@ -187,6 +209,7 @@ Illustrative, based on a real 360 summary for a synthetic student:
 3. **Salesforce:** `sf project deploy start --source-dir force-app --target-org <alias>`
 4. **Calendly:** create the named credential and paste the token in Setup, never in code.
 5. **Agent:** paste the Agent Script into a new employee agent, publish, activate, and assign the permission sets.
+6. **Student record page:** activate *Student Record Page* for Contact (the deploy includes it as the org default).
 
 [Full setup steps](docs/technical-details.md#setup)
 
@@ -197,6 +220,7 @@ The full depth lives in [**Technical details**](docs/technical-details.md). Star
 | Topic | Where |
 |---|---|
 | Actions, the code behind each, and the Agent Script | [Actions and implementation](docs/technical-details.md#actions-and-implementation) · [Why each action is Flow or Apex](docs/flow-vs-apex.md) |
+| The Student 360 card and record page | [Student record page](docs/technical-details.md#student-record-page) |
 | What stays where, nightly load, trust boundaries | [Architecture details](docs/technical-details.md#architecture-details) |
 | Data streams, identity resolution, engagement score, data graph | [Data 360](docs/technical-details.md#data-360) |
 | How it was tested, and what the tests changed | [Validation in detail](docs/technical-details.md#focused-technical-validation) · [Full write-up and raw results](validation/README.md) |
