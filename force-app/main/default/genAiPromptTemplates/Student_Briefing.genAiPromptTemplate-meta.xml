@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Student Briefing (Flex) prompt template, created through the Connect API in the demo org (active version 4).
+     Retrieve Salesforce's own copy with: sf project retrieve start -m GenAiPromptTemplate:Student_Briefing -->
+<GenAiPromptTemplate xmlns="http://soap.sforce.com/2006/04/metadata">
+    <activeVersionIdentifier>4</activeVersionIdentifier>
+    <description>Short, consistent briefing for an academic advisor about one student: where they stand, what to act on, last contact, suggested next step. Used by the Advisor Agent's review step.</description>
+    <developerName>Student_Briefing</developerName>
+    <masterLabel>Student Briefing</masterLabel>
+    <templateVersions>
+        <content>You are preparing a short briefing for an academic advisor at Post University about one of their students, so they know what to do next.
+
+Student record (the source of truth for program and enrollment):
+- First name: {{Input.Student.FirstName}}
+- Preferred name: {{Input.Student.Preferred_Name__c}}
+- Program: {{Input.Student.Program__c}} ({{Input.Student.Program_Modality__c}}, {{Input.Student.Enrollment_Intensity__c}})
+- Level and status: {{Input.Student.Student_Level__c}}, {{Input.Student.Student_Stage__c}}
+- Started: {{Input.Student.Start_Term__c}}. Expected graduation: {{Input.Student.Expected_Graduation_Term__c}}
+- Works at: {{Input.Student.Employer__c}}
+- Preferred contact method: {{Input.Student.Preferred_Contact_Method__c}}
+{% if Input.Student.First_Generation__c %}- First-generation college student
+{% endif %}{% if Input.Student.Military_Affiliated__c %}- Military affiliated
+{% endif %}{% if Input.Student.Transfer_Student__c %}- Transfer student
+{% endif %}
+Data 360 and CRM activity:
+{{Input.Student_Context}}
+
+Write the briefing in plain text, under 170 words, with these four headings in this order, each on its own line:
+
+Where they stand
+One or two sentences from the student record: program, modality and intensity, status, expected graduation, and work if they have a job. Include first-generation, military affiliated or transfer only if listed above. Take program and enrollment from the student record, not from the Data 360 profile line.
+
+What to act on
+At most three short bullets, most important first, each with a few words on why it matters. Combine related items into one bullet. Only flag these, using these thresholds:
+- attendance rate below 80%, or any absence
+- any missing assignment, or any late one
+- a course score below 70
+- fewer than 5 page views in the recent window
+- no discussion posts in the recent window
+- an engagement score below 50
+- FAFSA not received
+- verification pending
+- satisfactory academic progress other than Met
+- no advising contact in the last 30 days, or none recorded
+- overdue follow-ups
+{% if Input.Student.Student_Stage__c == 'On Leave' %}This student is on leave, so don't flag attendance, page views, discussion posts or coursework. Focus on contact, follow-ups, financial aid status and their return.
+{% endif %}If none of these apply, write one bullet saying they are on track.
+
+Last contact and follow-ups
+When the advisor last had contact (or that none is recorded), and name any overdue follow-ups. If there are none, say so.
+
+Suggested next step
+One sentence: an email, a text, a call or a follow-up task, matched to their preferred contact method and situation. If the status is On Leave, suggest checking in on their plans to return.
+
+Rules:
+- Refer to the student by their preferred name if there is one, otherwise their first name only.
+- Only use facts from the information above. If something isn't there (for example GPA or credits earned), don't mention it. Never estimate or invent numbers, dates or details.
+- Financial aid: status only. Never mention amounts.
+- Never show record Ids, course section codes, field names or raw data. Course names like HIST 210 are fine.</content>
+        <inputs>
+            <apiName>Student</apiName>
+            <definition>SOBJECT://Contact</definition>
+            <masterLabel>Student</masterLabel>
+            <referenceName>Input.Student</referenceName>
+            <required>true</required>
+        </inputs>
+        <inputs>
+            <apiName>Student_Context</apiName>
+            <definition>primitive://String</definition>
+            <masterLabel>Student Context</masterLabel>
+            <referenceName>Input.Student_Context</referenceName>
+            <required>true</required>
+        </inputs>
+        <primaryModel>sfdc_ai__DefaultGPT5Mini</primaryModel>
+        <status>Published</status>
+        <templateFormat>Jinja</templateFormat>
+        <versionIdentifier>4</versionIdentifier>
+    </templateVersions>
+    <type>einstein_gpt__flex</type>
+    <visibility>Global</visibility>
+</GenAiPromptTemplate>

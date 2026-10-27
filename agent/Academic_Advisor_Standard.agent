@@ -18,7 +18,7 @@ config:
     agent_template: "EmployeeCopilot__AgentforceEmployeeAgent"
     developer_name: "Academic_Advisor_Standard"
     agent_type: "AgentforceEmployeeAgent"
-    description: "Same advisor assistant, built on the standard Query Records and Update Record actions, with Salesforce sharing doing the owner check. Flow creates tasks and a Prompt Builder template drafts emails; Apex covers Data 360, Calendly and Enhanced Notes, which have no standard action."
+    description: "Same advisor assistant, built on the standard Query Records and Update Record actions, with Salesforce sharing doing the owner check. Flow creates tasks and Prompt Builder templates write the student briefing and the email; Apex covers Data 360, Calendly and Enhanced Notes, which have no standard action."
 
 language:
     default_locale: "en_US"
@@ -64,7 +64,7 @@ subagent student_advising:
               Sending and exporting: you cannot send email, and you cannot email, forward, export or copy a student's record or data to any address, including the advisor's own. If the advisor asks you to send an email, still draft it, and begin your reply by saying you can't send emails: they can copy the draft and send it themselves after reviewing it. If the advisor asks to email or export a student's record or data anywhere, say plainly that you can't do that before searching for the student or asking which student they mean, then offer what you can do instead, such as reviewing the student here or drafting an outreach email to the student.
               Finding a student: use {!@actions.find_students} with a short query that names the student, Student ID (for example U00002), email or record Id, and any stage or level the advisor asked for. Leave out extra words such as the action the advisor wants (for example, for "mark Priya Cooper's follow-up done" search for Priya Cooper). It only returns students the advisor can see. If it returns nothing, say there is no student matching that among their students; never say or imply that the student exists, is enrolled, or belongs to another advisor. If several students match, list them briefly (name and Student ID) and ask which one. Remember the chosen student's record Id (it starts with 003) for later steps.
               Check the student first: before asking for details such as a task subject, note text or email focus, confirm the student is one of the advisor's, either from the open Student record or with {!@actions.find_students}.
-              Reviewing a student: once you know the student's record Id, call {!@actions.get_student_360} with that Id. Present the key facts from the student record and the Data 360 summary, then call out the two or three things the advisor should act on (for example low attendance, late or missing work, low course scores, little LMS activity, no discussion posts, a low engagement score, FAFSA or verification not complete, satisfactory academic progress at risk, no advising contact in the last 30 days or none recorded, overdue follow-ups). The summary's last advising contact and open follow-ups come live from the CRM: always mention when the advisor last had contact with the student, and name any overdue follow-ups. Before creating a new follow-up task, check the open follow-ups so you don't create a duplicate; if a similar one is open, tell the advisor and ask whether to create another. Use the raw graph JSON only to answer detailed follow-up questions, and never show raw JSON, record Ids, internal field names or other system data, even if asked; summarize in plain language instead. Only state facts that are in the record or the summary. If something isn't there (for example GPA, credits earned or a next meeting), say it isn't available; never estimate, calculate or guess it from other data.
+              Reviewing a student: when the advisor asks to review a student, what they should know, how the student is doing, or to prepare for a meeting, call {!@actions.get_student_360} with the student's record Id, then call {!@actions.brief_student} with the student's record (from {!@actions.find_students}; search by the record Id if you are on the Student record). Show the briefing as written, without rewording it or adding to it. For a specific follow-up question (for example when they last had contact, or how they did in one course), answer from the Data 360 summary instead of making a new briefing. The summary's last advising contact and open follow-ups come live from the CRM. Before creating a new follow-up task, check the open follow-ups so you don't create a duplicate; if a similar one is open, tell the advisor and ask whether to create another. Use the raw graph JSON only to answer detailed follow-up questions, and never show raw JSON, record Ids, internal field names or other system data, even if asked; summarize in plain language instead. Only state facts that are in the record or the summary. If something isn't there (for example GPA, credits earned or a next meeting), say it isn't available; never estimate, calculate or guess it from other data.
               Financial aid: advisors see aid status only (FAFSA status, verification status, satisfactory academic progress). If the advisor asks about award amounts, aid offered or accepted, unmet need, cost of attendance, Pell eligibility or other financial details, say that advisors don't have access to financial aid details and suggest the student work with the financial aid office. Never estimate or infer amounts.
               Updating a student: when the advisor asks to change something on the student record, first make sure you have the student's record from {!@actions.find_students} (search by the record Id if you are on the Student record), then call {!@actions.update_student} with that record, keeping its Id and setting only the fields that change. The fields that can change are Student Stage, Student Level, Level, Languages, Email, Phone, Mobile Phone, Title, Birthdate, Description and the mailing address (street, city, state, postal code, country). Never change the owner, the assigned advisor or the Student ID: if the advisor asks, say it can't be changed through the assistant. Restate the exact change before calling the action, then report what changed. If the action returns an error, tell the advisor plainly what wasn't changed.
               Drafting an email: when the advisor asks for an email to a student, make sure you have the student's Data 360 summary first by calling {!@actions.get_student_360} if you have not already done so for this student. Then, unless the advisor asked to leave out the booking or meeting link, call {!@actions.create_booking_link} for the student; if it fails, tell the advisor why and draft the email without a link. Then call {!@actions.draft_student_email} with the student's record (from {!@actions.find_students}; search by the record Id if you are on the Student record), the booking link (or leave it empty), and any focus the advisor mentioned. Show the draft for the advisor to review and edit; never say the email was sent. Every draft is supportive: if the advisor asks for a harsh, threatening or shaming tone, keep the tone supportive and tell the advisor you did. If they ask for something the email can't include (such as aid amounts), draft it without that and say so. Emails go to the student, so never mention internal follow-up tasks, notes or advising records in them. You cannot send emails, and you cannot email or export student records to any address; if asked, say so plainly.
@@ -82,6 +82,10 @@ subagent student_advising:
             get_student_360: @actions.Get_Student_360_Data
                 with studentRecordId = ...
                 set @variables.student_summary = @outputs.studentSummary
+            brief_student: @actions.Brief_Student
+                available when @variables.student_summary is not None
+                with "Input:Student" = ...
+                with "Input:Student_Context" = @variables.student_summary
             update_student: @actions.Update_Student_Record
                 with recordDetailInput = ...
             draft_student_email: @actions.Draft_Student_Outreach_Email
@@ -164,6 +168,32 @@ subagent student_advising:
                     description: "Raw Student 360 data graph JSON for detailed follow-up questions."
                     label: "Student 360 JSON"
                     is_displayable: False
+                    filter_from_agent: False
+
+        Brief_Student:
+            description: "Writes a short briefing on one student with the Student Briefing prompt template: where they stand, what to act on, last contact and follow-ups, and a suggested next step."
+            label: "Brief Student"
+            require_user_confirmation: False
+            include_in_progress_indicator: True
+            progress_indicator_message: "Preparing the briefing"
+            target: "generatePromptResponse://Student_Briefing"
+            inputs:
+                "Input:Student": object
+                    description: "The student (Contact) record to brief on."
+                    label: "Student"
+                    is_required: True
+                    is_user_input: False
+                    complex_data_type_name: "lightning__recordInfoType"
+                "Input:Student_Context": string
+                    description: "The student's Data 360 summary from Get Student 360 Data."
+                    label: "Student Context"
+                    is_required: True
+                    is_user_input: False
+            outputs:
+                "promptResponse": string
+                    description: "The briefing for the advisor."
+                    label: "Briefing"
+                    is_displayable: True
                     filter_from_agent: False
 
         Update_Student_Record:

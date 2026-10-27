@@ -37,28 +37,28 @@ Best,
             <apiName>Student</apiName>
             <definition>SOBJECT://Contact</definition>
             <masterLabel>Student</masterLabel>
-            <referenceName>Input:Student</referenceName>
+            <referenceName>Input.Student</referenceName>
             <required>true</required>
         </inputs>
         <inputs>
             <apiName>Student_Context</apiName>
             <definition>primitive://String</definition>
             <masterLabel>Student Context</masterLabel>
-            <referenceName>Input:Student_Context</referenceName>
+            <referenceName>Input.Student_Context</referenceName>
             <required>true</required>
         </inputs>
         <inputs>
             <apiName>Advisor_Focus</apiName>
             <definition>primitive://String</definition>
             <masterLabel>Advisor Focus</masterLabel>
-            <referenceName>Input:Advisor_Focus</referenceName>
+            <referenceName>Input.Advisor_Focus</referenceName>
             <required>false</required>
         </inputs>
         <inputs>
             <apiName>Booking_Link</apiName>
             <definition>primitive://String</definition>
             <masterLabel>Booking Link</masterLabel>
-            <referenceName>Input:Booking_Link</referenceName>
+            <referenceName>Input.Booking_Link</referenceName>
             <required>false</required>
         </inputs>
         <primaryModel>sfdc_ai__DefaultGPT5Mini</primaryModel>

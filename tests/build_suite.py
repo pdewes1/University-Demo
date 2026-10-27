@@ -418,12 +418,21 @@ STANDARD_CASES = [
 STANDARD_ACTION_NAMES = {"find_students": "QueryStudentRecords"}
 
 
+# Review-style requests, which the standard agent answers with the Student Briefing template.
+BRIEFING_CASES = {"G01", "G02", "G03", "G04", "G11", "M08"}
+
+
 def standardize(cases):
     out = []
     for c in cases:
         cid, cat, utt, ctx, topic, actions, outcome, hist = c
         if "update_student" in actions and "find_students" not in actions and not hist:
             actions = ["find_students"] + actions
+        if cid in BRIEFING_CASES:
+            if "find_students" not in actions and not hist:
+                actions = ["find_students"] + actions
+            actions = actions + ["brief_student"]
+            outcome += " Uses the four-part briefing: where they stand, what to act on, last contact and follow-ups, suggested next step."
         if "draft_student_email" in actions:
             if "find_students" not in actions and not hist:
                 actions = ["find_students"] + actions
@@ -442,6 +451,7 @@ ACTION_NAMES = {
     "get_student_360": "Get_Student_360_Data",
     "update_student": "Update_Student_Record",
     "draft_student_email": "Draft_Student_Outreach_Email",
+    "brief_student": "Brief_Student",
     "create_booking_link": "Create_Calendly_Booking_Link",
     "create_task": "Create_Student_Task",
     "log_note": "Log_Student_Note",
