@@ -91,7 +91,7 @@ The agent brings Banner, Canvas and the CRM together for one student, tells the 
 | Challenge | How the recommendation answers it |
 |---|---|
 | Advisors work across siloed systems | Data 360 joins Banner, Canvas and the CRM into one view of each student. The advisor asks one question instead of opening three systems, and each system of record stays where it is. |
-| Each advisor covers more students | The agent does the prep work: the summary, what to act on, a drafted email, a booking link, a task and a note, in one conversation. Advisor time goes to the outreach itself, and cost grows with use, not with the number of students. |
+| Each advisor covers more students | The agent does the prep work: the summary, what to act on, a drafted email, a booking link, a task and a note, in one conversation. Advisor time goes to the outreach and 1:1 human connection with the student. |
 | The data is messy and duplicated | Identity resolution matches the same student across systems and merges duplicates into one record, so the agent always works from the right student. The engagement score is calculated once, the same way for everyone. |
 
 **It moves each goal.**
