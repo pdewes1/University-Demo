@@ -5,7 +5,7 @@ A 10-minute live demo of the Advisor Agent, with exact prompts. Run it as the ad
 ## Before the session
 
 - [ ] Data graph `Student_360_Graph` shows **Ready**, refreshed in the last day.
-- [ ] Agent version 8 is active. Open a fresh agent panel so no earlier conversation carries over.
+- [ ] Agent version 9 (or version 3 of the hybrid, if you demo that one) is active. Open a fresh agent panel so no earlier conversation carries over.
 - [ ] Priya Cooper has her one open task ("Follow up: missed HIST 210 class") and no leftover test tasks or notes from rehearsal. Delete any.
 - [ ] Calendly: run one booking link in rehearsal to confirm the token works.
 - [ ] Backup recording is on the laptop and on a USB stick (see the end of this page).

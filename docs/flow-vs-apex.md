@@ -4,8 +4,8 @@ There are two builds of the Advisor Agent in the org, both active:
 
 | Agent | Built with |
 |---|---|
-| `Academic_Advisor_Student_Success` (v8) | All actions in Apex |
-| `Academic_Advisor_Hybrid` (v2) | Flow for the access check and simple record work; Apex for the rest |
+| `Academic_Advisor_Student_Success` (v9) | All actions in Apex |
+| `Academic_Advisor_Hybrid` (v3) | Flow for the access check and simple record work; Apex for the rest |
 
 They have the same instructions, topics and action names, so the same Testing Center suites run against both, and the two can be compared directly.
 
@@ -47,7 +47,7 @@ Each action below covers what it does, why it's built the way it is, what it wou
 - **Another advisor's student is never loaded.** The ownership condition is in the lookup's filter, not checked after the record comes back, so the flow never holds data it shouldn't. That holds whatever context the flow runs in.
 - **One place for the rule.** It's a subflow, `Advisor_Check_Student_Access`, called by the task and update flows rather than copied into each. Change it once and every flow action follows. That's the same design as `StudentAccess` in Apex, which every Apex action calls.
 
-**What the Apex version looks like.** `StudentAccess.ownedStudent()`: about ten lines, a `WITH USER_MODE` query, then an owner comparison. The all-Apex agent (v8) uses it, and so do the hybrid agent's Apex actions.
+**What the Apex version looks like.** `StudentAccess.ownedStudent()`: about ten lines, a `WITH USER_MODE` query, then an owner comparison. The all-Apex agent uses it, and so do the hybrid agent's Apex actions.
 
 **Trade-offs.**
 
