@@ -84,7 +84,7 @@ The agent brings Banner, Canvas and the CRM together for one student, tells the 
 | Writes each check-in email from scratch | Reviews a specific, supportive draft with a booking link for that student |
 | Follow-ups live in memory or a notebook | A task and a note are logged on the student record in the same conversation |
 
-**How it gets there:** take baselines → pilot with one advising team → roll out to all advisors and track persistence → phase 2, an Admissions Agent. Running cost grows with how much advisors use the agent, not with the number of students, and keeping a small number of extra students enrolled covers the first year. [Costs and savings](docs/cost-model.md)
+**How it gets there:** take baselines → pilot with one advising team → roll out to all advisors and track persistence → phase 2, an Admissions Agent or additional data for the Advisor Agent. Running cost grows with how much advisors use the agent, not with the number of students, and keeping a small number of extra students enrolled covers the first year. [Costs and savings](docs/cost-model.md)
 
 ## Assumptions
 
