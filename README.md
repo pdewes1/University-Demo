@@ -41,7 +41,7 @@ Post University has been educating students in Waterbury, Connecticut, since 189
 
 Post University knows that school is often the first thing to slip when work, family or service make demands on a student's time. For many students, a missed class becomes a missed assignment, and missed assignments can quickly snowball into course withdrawals, failing grades or leaving altogether.
 
-Post University's promise is an education that works with students' lives, not against them. Leadership is now asking: *how can we step in and help students sooner, before it's too late?*
+Post University's promise is an education that works with students' lives, not against them. Leadership is now asking: *how can we step in and help students more practively, before it's too late?*
 
 > **Demo scenario.** This is a design and validation exercise. It is not affiliated with or endorsed by the university, and all student data is synthetic. No real student data is used.
 
