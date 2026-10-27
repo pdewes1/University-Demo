@@ -5,6 +5,7 @@ The deeper material behind the [README](../README.md): the decision in full, the
 - [Decision summary](#decision-summary)
 - [Actions and implementation](#actions-and-implementation)
 - [Student record page](#student-record-page)
+- [Advisor home page](#advisor-home-page)
 - [Architecture details](#architecture-details)
 - [Data 360](#data-360)
 - [Focused technical validation](#focused-technical-validation)
@@ -74,7 +75,7 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 | First Generation, Military Affiliated | Admissions, self-reported | No (read-only) |
 | Preferred Name, Preferred Contact Method, Employer | The student, through their advisor | Yes |
 
-Field access is set on the System Administrator and Academic Advisor profiles in the demo org. The Academic Advisor profile also needs Apex class access to `Student360CardController` (the Student 360 card) and the agent's action classes (`Student360DataAction`, `CreateCalendlyBookingLinkAction`, `DraftStudentEmailAction`, `FindStudentsAction`, `LogStudentNoteAction`). Without it, advisors get "You do not have access to the Apex class" on the student page. Profiles aren't in this repo, so set the same field-level security and class access after deploying elsewhere. GPA and credits earned are deliberately not on the record: the agent is tested to say those aren't available rather than guess.
+Field access is set on the System Administrator and Academic Advisor profiles in the demo org. The Academic Advisor profile also needs Apex class access to `Student360CardController` (the Student 360 card) and the agent's action classes (`Student360DataAction`, `CreateCalendlyBookingLinkAction`, `DraftStudentEmailAction`, `FindStudentsAction`, `LogStudentNoteAction`, `UpdateStudentRecordAction`), and `AdvisorCaseloadController` for the [home page](#advisor-home-page). Without it, advisors get "You do not have access to the Apex class" on the student page. Profiles aren't in this repo, so set the same field-level security and class access after deploying elsewhere. GPA and credits earned are deliberately not on the record: the agent is tested to say those aren't available rather than guess.
 
 **Demo data.** [`StudentProfileSeeder`](../force-app/main/default/classes/StudentProfileSeeder.cls) fills those fields for every student, plus a mobile number, job title, languages and a one-line description. Program, modality, enrollment intensity and terms follow each student's Canvas profile in Data 360 (major, campus, enrollment status and class year, read with `ConnectApi.CdpQuery`), so the record and the Student 360 data the agent reads agree. A student's Canvas major maps to the BS/BA program, or to the master's program for graduate students. Everything else comes from the Student ID, so a rerun gives the same result, and it includes working adults and first-generation, military-affiliated and transfer students, to match the [assumptions](../README.md#assumptions) about Post's students. Priya Cooper and Aisha Allen get fixed profiles that fit the demo script and still match Canvas. Level and stage come from Banner and aren't changed, so a few students can still differ from Canvas there (for example, on leave in the CRM but full-time in Canvas). It only fills blank fields unless told to overwrite, and it never changes Student ID, owner, stage or level that are already set. Run it as an invocable action:
 
@@ -120,6 +121,44 @@ The engagement bands are *On track* (75 and up), *Watch* (50 to 74) and *At risk
 **Tests.** [`Student360CardControllerTests`](../force-app/main/default/classes/Student360CardControllerTests.cls): 7 tests, all passing, 85% coverage. They cover graph parsing, the flags and bands, aid-year formatting, CRM activity, and the no-profile and no-access paths. [Results](../validation/results/2026-10-26-student360card-tests.json)
 
 **Activating the page.** The page is deployed but has to be activated. Either deploy `Contact.object-meta.xml`, or open *Student Record Page* in Lightning App Builder, click **Activation**, and choose **Assign as Org Default** (desktop).
+
+## Advisor home page
+
+[`Advisor_Home`](../force-app/main/default/flexipages/Advisor_Home.flexipage-meta.xml) replaces the standard home page for the Academic Advisor profile in the Sales app (the override is in [`standard__LightningSales.app-meta.xml`](../force-app/main/default/applications/standard__LightningSales.app-meta.xml)). It answers the question the agent can't: *which of my students should I worry about this week?*
+
+- **My Caseload** ([`advisorCaseload`](../force-app/main/default/lwc/advisorCaseload) and [`AdvisorCaseloadController`](../force-app/main/default/classes/AdvisorCaseloadController.cls)). It shows five tiles: students, how many need attention, overdue follow-ups, no contact in 30 days, and aid to follow up. Below them are filters (Needs attention, Watch, All, On leave) and the students ranked by priority. Each row has the engagement score, attendance, last Canvas login, last contact, follow-ups, aid status and flags. Names open the Student record.
+- **Open Tasks** list view, **Recent Records**, **Assistant**, and a short note pointing advisors to the Advisor Agent.
+
+**How it reads the data.** The agent and the record card read one student at a time from the data graph. The caseload instead runs two Data 360 SQL queries (`ConnectApi.CdpQuery.queryAnsiSqlV2`) for the whole caseload, in chunks of 500 Student IDs:
+1. One row per student: Canvas user (last login), Banner aid status, and the engagement calculated insight joined through `UnifiedIndividual__dlm`.
+2. Attendance and missing-submission counts, combined with `UNION ALL`.
+
+Follow-ups and last contact come from the CRM (tasks, events, Enhanced Notes), aggregated per student. For Advisor Paul's 8 students that's 4 queries. The admin's 836 students load in about 6 seconds with 240 ms of Apex CPU.
+
+**Priority.** The rule is a simple weighting, so an advisor can see why a student is near the top:
+
+| Signal | Points |
+|---|---|
+| Engagement below 50 | 3 |
+| Two or more absences (attendance below 80%) | 2 |
+| Any missing assignment | 2 |
+| Academic progress not *Met* | 2 |
+| Overdue follow-up | 2 |
+| One absence (attendance below 80%) | 1 |
+| No Canvas login in 21+ days | 1 |
+| FAFSA not received | 1 |
+| Aid verification pending | 1 |
+
+Three or more points means **Needs attention**, one or two means **Watch**, and none means **On track**. Students on leave aren't flagged for engagement, attendance or Canvas activity, but aid and academic progress still count. "No contact in 30 days" is a tile, not a flag, so it doesn't push every new student up the list. For Advisor Paul the ranking puts three students at the top:
+- **Omar Martin:** engagement 0.
+- **Sofia Anderson:** two absences, no FAFSA, no Canvas login since September.
+- **Brian Campbell:** a missing assignment and aid verification pending.
+
+**Access.** Students are read `WITH USER_MODE` and filtered to `OwnerId` = the running user. Data 360 is queried only for those Student IDs, so another advisor's students never appear, not even for an admin with View All Data. Aid is status only. The Academic Advisor profile needs Apex class access to `AdvisorCaseloadController`. If Data 360 can't be reached, the list still loads with CRM activity and says so.
+
+**Tests.** [`AdvisorCaseloadControllerTests`](../force-app/main/default/classes/AdvisorCaseloadControllerTests.cls): 4 tests, all passing, 82% coverage. They cover ranking, flags and status, preferred names, the on-leave rules, KPI counts, other advisors' students staying out, an empty caseload and the Data 360 fallback. The Data 360 SQL can't run in tests, so it's checked against the org instead.
+
+**Deploying the component through the Tooling API.** Include the `js-meta.xml` as a `LightningComponentResource`. Without it, the bundle's targets aren't registered and the page save fails with "doesn't implement any of the region's allowed interfaces."
 
 ## Architecture details
 
