@@ -28,7 +28,7 @@ private class Student360CardControllerTests {
                 }
             } },
             'Snowflake_Banner_Financial_Aid_Summa__dlm' => new List<Object>{ new Map<String, Object>{
-                'aid_year__c' => 2026, 'fafsa_status__c' => 'Received',
+                'aid_year__c' => 2627.000000000000000000, 'fafsa_status__c' => 'Received',
                 'verification_status__c' => 'Selected - Pending', 'satisfactory_academic_progress__c' => 'Warning'
             } }
         } }
@@ -57,8 +57,18 @@ private class Student360CardControllerTests {
         System.assertEquals(5, s.lmsMinutes);
         System.assertEquals('2026-09-15', s.lastLogin);
         System.assertEquals(0, s.discussionPosts);
+        System.assertEquals('2026–27', s.aidYear, 'Banner aid year code shown as a year range');
         System.assertEquals('Received', s.fafsaStatus);
         System.assertEquals('Warning', s.sapStatus);
+    }
+
+    @IsTest
+    static void aidYearCodesBecomeReadable() {
+        System.assertEquals('2026–27', Student360CardController.formatAidYear('2627.000000000000000000'));
+        System.assertEquals('2099–00', Student360CardController.formatAidYear('9900'));
+        System.assertEquals('2026', Student360CardController.formatAidYear('2026'));
+        System.assertEquals(null, Student360CardController.formatAidYear(''));
+        System.assertEquals('n/a', Student360CardController.formatAidYear('n/a'));
     }
 
     @IsTest

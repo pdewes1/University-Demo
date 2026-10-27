@@ -167,11 +167,24 @@ public with sharing class Student360CardController {
 
         Map<String, Object> aid = first(root, 'Snowflake_Banner_Financial_Aid_Summa__dlm');
         if (aid != null) {   // status fields only, by design
-            s.aidYear = str(aid, 'aid_year__c');
+            s.aidYear = formatAidYear(str(aid, 'aid_year__c'));
             s.fafsaStatus = str(aid, 'fafsa_status__c');
             s.verificationStatus = str(aid, 'verification_status__c');
             s.sapStatus = str(aid, 'satisfactory_academic_progress__c');
         }
+    }
+
+    // Banner aid year codes are YYZZ (2627 = the 2026-27 aid year); Data 360 stores them as decimals.
+    @TestVisible
+    private static String formatAidYear(String raw) {
+        if (String.isBlank(raw)) return null;
+        Integer code;
+        try { code = Decimal.valueOf(raw).intValue(); } catch (Exception e) { return raw; }
+        Integer startYy = code / 100, endYy = Math.mod(code, 100);
+        if (code >= 1000 && code <= 9999 && Math.mod(startYy + 1, 100) == endYy) {
+            return '20' + String.valueOf(startYy).leftPad(2, '0') + '–' + String.valueOf(endYy).leftPad(2, '0');
+        }
+        return String.valueOf(code);
     }
 
     // Same signals the agent calls out, as short labels for the card.
