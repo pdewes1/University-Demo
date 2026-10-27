@@ -12,14 +12,59 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
+                <fullName>BS Biology</fullName>
+                <default>false</default>
+                <label>BS Biology</label>
+            </value>
+            <value>
                 <fullName>BS Business Administration</fullName>
                 <default>false</default>
                 <label>BS Business Administration</label>
             </value>
             <value>
-                <fullName>BS Accounting</fullName>
+                <fullName>BS Chemistry</fullName>
                 <default>false</default>
-                <label>BS Accounting</label>
+                <label>BS Chemistry</label>
+            </value>
+            <value>
+                <fullName>BS Computer Science</fullName>
+                <default>false</default>
+                <label>BS Computer Science</label>
+            </value>
+            <value>
+                <fullName>BS Economics</fullName>
+                <default>false</default>
+                <label>BS Economics</label>
+            </value>
+            <value>
+                <fullName>BA English</fullName>
+                <default>false</default>
+                <label>BA English</label>
+            </value>
+            <value>
+                <fullName>BA History</fullName>
+                <default>false</default>
+                <label>BA History</label>
+            </value>
+            <value>
+                <fullName>BS Mathematics</fullName>
+                <default>false</default>
+                <label>BS Mathematics</label>
+            </value>
+            <value>
+                <fullName>BS Mechanical Engineering</fullName>
+                <default>false</default>
+                <label>BS Mechanical Engineering</label>
+            </value>
+            <value>
+                <fullName>BS Nursing</fullName>
+                <default>false</default>
+                <label>BS Nursing</label>
+            </value>
+            <value>
+                <fullName>BA Political Science</fullName>
+                <default>false</default>
+                <label>BA Political Science</label>
             </value>
             <value>
                 <fullName>BS Psychology</fullName>
@@ -27,34 +72,9 @@
                 <label>BS Psychology</label>
             </value>
             <value>
-                <fullName>BS Criminal Justice</fullName>
+                <fullName>MS Biology</fullName>
                 <default>false</default>
-                <label>BS Criminal Justice</label>
-            </value>
-            <value>
-                <fullName>BS Cybersecurity</fullName>
-                <default>false</default>
-                <label>BS Cybersecurity</label>
-            </value>
-            <value>
-                <fullName>BS Computer Information Systems</fullName>
-                <default>false</default>
-                <label>BS Computer Information Systems</label>
-            </value>
-            <value>
-                <fullName>BS Health Care Management</fullName>
-                <default>false</default>
-                <label>BS Health Care Management</label>
-            </value>
-            <value>
-                <fullName>RN to BSN</fullName>
-                <default>false</default>
-                <label>RN to BSN</label>
-            </value>
-            <value>
-                <fullName>AS Early Childhood Education</fullName>
-                <default>false</default>
-                <label>AS Early Childhood Education</label>
+                <label>MS Biology</label>
             </value>
             <value>
                 <fullName>MBA</fullName>
@@ -62,19 +82,54 @@
                 <label>MBA</label>
             </value>
             <value>
-                <fullName>MS Accounting</fullName>
+                <fullName>MS Chemistry</fullName>
                 <default>false</default>
-                <label>MS Accounting</label>
+                <label>MS Chemistry</label>
             </value>
             <value>
-                <fullName>MS Human Services</fullName>
+                <fullName>MS Computer Science</fullName>
                 <default>false</default>
-                <label>MS Human Services</label>
+                <label>MS Computer Science</label>
             </value>
             <value>
-                <fullName>MEd Higher Education Administration</fullName>
+                <fullName>MS Economics</fullName>
                 <default>false</default>
-                <label>MEd Higher Education Administration</label>
+                <label>MS Economics</label>
+            </value>
+            <value>
+                <fullName>MA English</fullName>
+                <default>false</default>
+                <label>MA English</label>
+            </value>
+            <value>
+                <fullName>MA History</fullName>
+                <default>false</default>
+                <label>MA History</label>
+            </value>
+            <value>
+                <fullName>MS Mathematics</fullName>
+                <default>false</default>
+                <label>MS Mathematics</label>
+            </value>
+            <value>
+                <fullName>MS Mechanical Engineering</fullName>
+                <default>false</default>
+                <label>MS Mechanical Engineering</label>
+            </value>
+            <value>
+                <fullName>MS Nursing</fullName>
+                <default>false</default>
+                <label>MS Nursing</label>
+            </value>
+            <value>
+                <fullName>MA Political Science</fullName>
+                <default>false</default>
+                <label>MA Political Science</label>
+            </value>
+            <value>
+                <fullName>MS Psychology</fullName>
+                <default>false</default>
+                <label>MS Psychology</label>
             </value>
         </valueSetDefinition>
     </valueSet>

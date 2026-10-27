@@ -175,6 +175,7 @@ Each action below covers what it does, why it's built the way it is, what it wou
 | Create Student Task | Flow | There's no standard create-record action for this agent type (the agent builder rejects `createRecord` without a standard source action), so the task flow stays |
 | Log Student Note | Apex | Flow can't create Enhanced Notes, and there's no standard action for it |
 | Get Student 360 Data | Apex | Data 360 doesn't apply CRM sharing, so this action checks ownership first, then applies the financial aid allow-list and adds CRM activity. The standard data graph action also needs the unified Id, not the Contact Id |
+| Review a student | **Prompt Builder** template `Student_Briefing` | A consistent four-part briefing with fixed thresholds. [Details](#the-student-briefing-as-a-prompt-template) |
 | Draft Outreach Email | **Prompt Builder** template `Email_Outreach` | Reads the student record directly with merge fields; the booking link comes from the Calendly action first. [How it was tested](#the-email-as-a-prompt-template) |
 | Create Calendly Booking Link | Apex | No standard action exists for an outside API |
 
@@ -217,6 +218,25 @@ After the fixes, all three test emails were clean: right greeting (including a p
 - **The model sees the name.** It goes through the Trust Layer masked, not kept out entirely as in Apex.
 - **The model copies the link.** In Apex, code inserts it. It came through exactly in every run, and the email test cases check it.
 - **Prompt Builder editing is fiddly.** In the editor, `__` in a custom field name inside a `{% if %}` gets read as bold formatting and removed, and `{{ }}` can't be nested inside `{% %}`. Keep conditions on simple inputs.
+
+## The student briefing as a prompt template
+
+When an advisor asks to review a student, what they should know or how the student is doing, the standard build calls Get Student 360 Data and then the **Student Briefing** Flex template ([copy in the repo](../force-app/main/default/genAiPromptTemplates/Student_Briefing.genAiPromptTemplate-meta.xml)). In the other two builds, the agent writes the review itself, so the shape changes from answer to answer. The template gives the same four sections every time:
+
+- **Where they stand:** program, modality and intensity, status, expected graduation, work, and first-generation, military or transfer when true. Taken from the student record.
+- **What to act on:** at most three items, most important first.
+- **Last contact and follow-ups.**
+- **Suggested next step,** matched to the student's preferred contact method.
+
+**What to act on uses fixed thresholds**, the same ones as the flags on the Student 360 card: attendance below 80% or any absence, missing or late work, a course score below 70, fewer than 5 page views, no discussion posts, an engagement score below 50, FAFSA not received, verification pending, academic progress other than Met, no contact in 30 days, and overdue follow-ups. With no thresholds, the first version called scores of 77 to 91 "low".
+
+**Students on leave** get a different instruction, switched by a Jinja condition on the stage: don't flag attendance or coursework, focus on contact, aid status and their return.
+
+**Inputs:** Student (Contact record) and Student Context (the Data 360 summary). Unlike the email template, this one was created through the Connect API. Its input reference names had to be `Input.Student` (with a dot) for the record input to resolve; `Input:Student` failed with "Invalid input value: null".
+
+**Testing** (2026-10-27, three students, four template versions): Priya (several flags), Aisha (on leave) and Jess (mostly on track, with a preferred name). The final version kept the format, flagged only real issues, left out false flags, used the on-leave mode for Aisha, and suggested a text for Priya and an email for the others, matching their contact preferences.
+
+**Profile data lines up.** The Data 360 summary's profile line comes from Canvas (major, class year, enrollment status, campus). The seeded CRM profile now follows it, so Jess shows as BS Psychology, full-time, on campus in both. The briefing still uses the student record for program and enrollment. Level and stage stay as Banner has them, so a few students can still differ there (for example, on leave in the CRM but full-time in Canvas). In production both would come from Banner and agree.
 
 ## Flow check versus Apex check
 

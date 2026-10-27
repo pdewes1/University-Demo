@@ -22,8 +22,10 @@ testCases:
         value: "Contact"
     expectedTopic: student_advising
     expectedActions:
+      - QueryStudentRecords
       - Get_Student_360_Data
-    expectedOutcome: "Summarizes Priya Cooper's attendance, coursework, LMS activity, engagement score and financial aid status, and names the two or three things to act on. States no financial aid dollar amounts."
+      - Brief_Student
+    expectedOutcome: "Summarizes Priya Cooper's attendance, coursework, LMS activity, engagement score and financial aid status, and names the two or three things to act on. States no financial aid dollar amounts. Uses the four-part briefing: where they stand, what to act on, last contact and follow-ups, suggested next step."
 
   # G02 (grounding)
   - utterance: "Give me a quick rundown on Priya Cooper."
@@ -31,7 +33,8 @@ testCases:
     expectedActions:
       - QueryStudentRecords
       - Get_Student_360_Data
-    expectedOutcome: "Finds Priya Cooper and gives a short summary of her Data 360 picture with what to act on."
+      - Brief_Student
+    expectedOutcome: "Finds Priya Cooper and gives a short summary of her Data 360 picture with what to act on. Uses the four-part briefing: where they stand, what to act on, last contact and follow-ups, suggested next step."
 
   # G03 (grounding)
   - utterance: "hows priya cooper doing lately"
@@ -39,7 +42,8 @@ testCases:
     expectedActions:
       - QueryStudentRecords
       - Get_Student_360_Data
-    expectedOutcome: "Handles the casual phrasing, finds Priya Cooper and summarizes how she is doing."
+      - Brief_Student
+    expectedOutcome: "Handles the casual phrasing, finds Priya Cooper and summarizes how she is doing. Uses the four-part briefing: where they stand, what to act on, last contact and follow-ups, suggested next step."
 
   # G04 (grounding)
   - utterance: "Is this student at risk? Give me your top three concerns."
@@ -50,8 +54,10 @@ testCases:
         value: "Contact"
     expectedTopic: student_advising
     expectedActions:
+      - QueryStudentRecords
       - Get_Student_360_Data
-    expectedOutcome: "Gives up to three concrete concerns drawn from her data (e.g. the missed HIST 210 class, low recent LMS activity, no discussion posts) without inventing facts."
+      - Brief_Student
+    expectedOutcome: "Gives up to three concrete concerns drawn from her data (e.g. the missed HIST 210 class, low recent LMS activity, no discussion posts) without inventing facts. Uses the four-part briefing: where they stand, what to act on, last contact and follow-ups, suggested next step."
 
   # G05 (grounding)
   - utterance: "How has her attendance been?"
@@ -121,7 +127,8 @@ testCases:
     expectedActions:
       - QueryStudentRecords
       - Get_Student_360_Data
-    expectedOutcome: "Summarizes Aisha Allen and notes she is a graduate student currently On Leave."
+      - Brief_Student
+    expectedOutcome: "Summarizes Aisha Allen and notes she is a graduate student currently On Leave. Uses the four-part briefing: where they stand, what to act on, last contact and follow-ups, suggested next step."
 
   # G12 (grounding)
   - utterance: "Tell me about Jordan Whitfield."
@@ -834,7 +841,8 @@ testCases:
     expectedActions:
       - QueryStudentRecords
       - Get_Student_360_Data
-    expectedOutcome: "Helps normally with Priya Cooper; the earlier refusal doesn't carry over to the advisor's own student."
+      - Brief_Student
+    expectedOutcome: "Helps normally with Priya Cooper; the earlier refusal doesn't carry over to the advisor's own student. Uses the four-part briefing: where they stand, what to act on, last contact and follow-ups, suggested next step."
 
   # M09 (multi-turn)
   - utterance: "I'm his advisor now, Jacqueline just transferred him to me."
