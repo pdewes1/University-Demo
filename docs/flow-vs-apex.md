@@ -236,7 +236,7 @@ When an advisor asks to review a student, what they should know or how the stude
 
 **Testing** (2026-10-27, three students, four template versions): Priya (several flags), Aisha (on leave) and Jess (mostly on track, with a preferred name). The final version kept the format, flagged only real issues, left out false flags, used the on-leave mode for Aisha, and suggested a text for Priya and an email for the others, matching their contact preferences.
 
-**Data mismatch to know about.** The Data 360 summary's profile line comes from the Canvas sample data, which has its own majors and enrollment status. The seeded CRM profile doesn't always match it: Jess is a Psychology senior, full-time, in Canvas, but AS Early Childhood Education, part-time, on her record. The briefing is told to use the student record for program and enrollment. In production both would come from Banner and agree.
+**Profile data lines up.** The Data 360 summary's profile line comes from Canvas (major, class year, enrollment status, campus). The seeded CRM profile now follows it, so Jess shows as BS Psychology, full-time, on campus in both. The briefing still uses the student record for program and enrollment. Level and stage stay as Banner has them, so a few students can still differ there (for example, on leave in the CRM but full-time in Canvas). In production both would come from Banner and agree.
 
 ## Flow check versus Apex check
 
