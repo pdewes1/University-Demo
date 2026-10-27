@@ -8,7 +8,7 @@ Hi There! My name is Paul Dewes, and I've worked in the Salesforce ecosystem sin
 
 **Salesforce Support.** I started at Salesforce on the Marketing Cloud Engagement Support team and moved up quickly to Swarm Lead, supporting a group of Support Engineers better work with our customers. There I worked on Marketing Cloud Engagement and Data 360 when it first launched.
 
-**Gerent / TELUS.** A former colleague asked me to help start a Marketing Cloud practice at Gerent where I joined in January of 2023. We built new processes and reusable assets for the Marketing Cloud & Data 360 practice and implemented Marketing Cloud, Data 360 and Agentforce for a variety of different clients across multiple verticals. When Agentforce first launched, I was in the first group to build proofs of concept for customers.
+**Gerent / TELUS.** I joined Gerent in January of 2023 when a colleague reached out to ask for help in starting a Marketing Cloud practice. The idea of starting something new and learning a whole new way to interact with the Salesforce Ecosystem was a very exciting idea. We built new processes and reusable assets for the Marketing Cloud & Data 360 practice and implemented Marketing Cloud, Data 360 and Agentforce for a variety of different clients across multiple verticals. When Agentforce first launched, I was in the first group to build proofs of concept for customers.
 
 **Today.** I'm a senior member of the Solution Architect team, specializing in Data 360, and I keep taking on new challenges and responsibilities such as Marketing Cloud Next and assisting with pre-sales conversations.
 
