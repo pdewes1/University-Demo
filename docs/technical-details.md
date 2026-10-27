@@ -57,7 +57,7 @@ The agent is written in Agent Script: [`agent/Academic_Advisor_Student_Success.a
 
 | Piece | What it is |
 |---|---|
-| [`Student_Record_Page`](../force-app/main/default/flexipages/Student_Record_Page.flexipage-meta.xml) | Lightning record page for Contact: highlights, the Student 360 card, then tabs for *Data 360* (all six Data 360 lists together), *Related* and *Details*. Activity and Notes & Attachments are on the right. |
+| [`Student_Record_Page`](../force-app/main/default/flexipages/Student_Record_Page.flexipage-meta.xml) | Lightning record page for Contact: highlights, the Student 360 card, then tabs for *Data 360* (all six Data 360 lists together), *Related* and *Details* (the default tab). Activity and Notes & Attachments are on the right. |
 | [`student360Card`](../force-app/main/default/lwc/student360Card) | Lightning web component: engagement gauge, what-to-watch flags, courses, six metric tiles, financial aid status. |
 | [`Student360CardController`](../force-app/main/default/classes/Student360CardController.cls) | Apex controller. Reads the `Student_360_Graph` data graph by the student's unified profile, the same way the agent's Get Student 360 Data action does, and reads advising contact and overdue follow-ups live from the CRM. |
 | [`Contact Layout`](../force-app/main/default/layouts/Contact-Contact%20Layout.layout-meta.xml) | Feeds the *Related* tab. The Data 360 lists and Notes & Attachments were moved off it to the page, so nothing shows twice. |
